@@ -108,7 +108,7 @@ public class BasicOpMode_Linear extends LinearOpMode {
             rightDrive.setPower(rightPower);
 
             // Show the elapsed game time and wheel power.
-            telemetry.addData("Team Golden Brick", "Alpha repo ");
+            telemetry.addData("Team Name Pending", "Alpha repo ");
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.addData("Gamepad", "left (%.2f), right (%.2f)", gamepad1.left_stick_y, gamepad1.right_stick_x);
