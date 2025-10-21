@@ -274,24 +274,26 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
             //          holdHeading() is used after turns to let the heading stabilize
             //          Add a sleep(2000) after any step to keep the telemetry data visible for review
 
-            //driveStraight(DRIVE_SPEED, 24.0, 0.0);    // Drive Forward 24
+            driveStraight(DRIVE_SPEED, 24.0, 0.0);    // Drive Back 24
+
+            turnToHeading(TURN_SPEED, -45.0);               // Turn  CW to -45 Degrees
+            holdHeading(TURN_SPEED, -45.0, 0.5);   // Hold -45 Deg heading for a 1/2 second
+
+            driveStraight(DRIVE_SPEED, 17.0, -45.0);  // Drive Forward 17" at -45 degrees (12"x and 12"y)
+            turnToHeading( TURN_SPEED,  45.0);               // Turn  CCW  to  45 Degrees
+            holdHeading( TURN_SPEED,  45.0, 0.5);    // Hold  45 Deg heading for a 1/2 second
+
+            driveStraight(DRIVE_SPEED, 17.0, 45.0);  // Drive Forward 17" at 45 degrees (-12"x and 12"y)
+            turnToHeading( TURN_SPEED,   0.0);               // Turn  CW  to 0 Degrees
+            holdHeading( TURN_SPEED,   0.0, 1.0);    // Hold  0 Deg heading for 1 second
+
+            turnToHeading(TURN_SPEED, 180.0);
 
             launchThreeTimes();
 
-            //driveStraight(DRIVE_SPEED, -24.0, 0.0);    // Drive Back 24
+            turnToHeading(TURN_SPEED, 0.0);
 
-            //turnToHeading(TURN_SPEED, -45.0);               // Turn  CW to -45 Degrees
-            //holdHeading(TURN_SPEED, -45.0, 0.5);   // Hold -45 Deg heading for a 1/2 second
-
-            //driveStraight(DRIVE_SPEED, 17.0, -45.0);  // Drive Forward 17" at -45 degrees (12"x and 12"y)
-            //turnToHeading( TURN_SPEED,  45.0);               // Turn  CCW  to  45 Degrees
-            //holdHeading( TURN_SPEED,  45.0, 0.5);    // Hold  45 Deg heading for a 1/2 second
-
-            //driveStraight(DRIVE_SPEED, 17.0, 45.0);  // Drive Forward 17" at 45 degrees (-12"x and 12"y)
-            //turnToHeading( TURN_SPEED,   0.0);               // Turn  CW  to 0 Degrees
-            //holdHeading( TURN_SPEED,   0.0, 1.0);    // Hold  0 Deg heading for 1 second
-
-            //driveStraight(DRIVE_SPEED,-48.0, 0.0);    // Drive in Reverse 48" (should return to approx. staring position)
+            driveStraight(DRIVE_SPEED,-48.0, 0.0);    // Drive in Reverse 48" (should return to approx. staring position)
 
             telemetry.addData("Path", "Complete");
             telemetry.update();
@@ -535,9 +537,18 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
             telemetry.addData("Motion", "Turning");
         }
 
-        telemetry.addData("Heading- Target : Current", "%5.2f : %5.0f", targetHeading, getHeading());
+        YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+        double yaw = orientation.getYaw(AngleUnit.DEGREES);
+        double pitch = orientation.getPitch(AngleUnit.DEGREES);
+
+
+        telemetry.addData("Heading Target : Current", "%5.2f : %5.0f", targetHeading, getHeading());
         telemetry.addData("Error  : Steer Pwr",  "%5.1f : %5.1f", headingError, turnSpeed);
         telemetry.addData("Front Wheel Speeds L : R", "%5.2f : %5.2f", frontLeftSpeed, frontRightSpeed);
+
+        telemetry.addData("yaw", yaw);
+        telemetry.addData("pitch", pitch);
+
         telemetry.update();
     }
 
