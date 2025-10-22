@@ -142,8 +142,7 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
     // These constants define the desired driving/control characteristics
     // They can/should be tweaked to suit the specific robot drive train.
-    static final double     DRIVE_SPEED             = 0.4;     // Max driving speed for better distance accuracy.
-    static final double     TURN_SPEED              = 0.2;     // Max turn speed to limit turn rate.
+    //static final double     DRIVE_SPEED             = 0.4;     // Max driving speed for better distance accuracy
     static final double     HEADING_THRESHOLD       = 1.0 ;    // How close must the heading get to the target before moving to next step.
                                                                // Requiring more accuracy (a smaller number) will often make the turn take longer to get into the final position.
     // Define the Proportional control coefficient (or GAIN) for "heading control".
@@ -161,6 +160,7 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
     ElapsedTime feederTimer = new ElapsedTime();
 
+    private boolean continuousLaunchMode = true;
 
     void stopAndReset() {
 
@@ -274,26 +274,26 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
             //          holdHeading() is used after turns to let the heading stabilize
             //          Add a sleep(2000) after any step to keep the telemetry data visible for review
 
-            driveStraight(DRIVE_SPEED, 24.0, 0.0);    // Drive Back 24
+            driveStraight(speeds.ENHANCED_SPEED, 24.0, 0.0);    // Drive Back 24
 
-            turnToHeading(TURN_SPEED, -45.0);               // Turn  CW to -45 Degrees
-            holdHeading(TURN_SPEED, -45.0, 0.5);   // Hold -45 Deg heading for a 1/2 second
+            turnToHeading(speeds.TURN_SPEED, -45.0);               // Turn  CW to -45 Degrees
+            //holdHeading(speeds.TURN_SPEED, -45.0, 0.5);   // Hold -45 Deg heading for a 1/2 second
 
-            driveStraight(DRIVE_SPEED, 17.0, -45.0);  // Drive Forward 17" at -45 degrees (12"x and 12"y)
-            turnToHeading( TURN_SPEED,  45.0);               // Turn  CCW  to  45 Degrees
-            holdHeading( TURN_SPEED,  45.0, 0.5);    // Hold  45 Deg heading for a 1/2 second
+            driveStraight(speeds.ENHANCED_SPEED, 17.0, -45.0);  // Drive Forward 17" at -45 degrees (12"x and 12"y)
+            turnToHeading(speeds.TURN_SPEED,  45.0);               // Turn  CCW  to  45 Degrees
+            //holdHeading( speeds.TURN_SPEED,  45.0, 0.5);    // Hold  45 Deg heading for a 1/2 second
 
-            driveStraight(DRIVE_SPEED, 17.0, 45.0);  // Drive Forward 17" at 45 degrees (-12"x and 12"y)
-            turnToHeading( TURN_SPEED,   0.0);               // Turn  CW  to 0 Degrees
-            holdHeading( TURN_SPEED,   0.0, 1.0);    // Hold  0 Deg heading for 1 second
+            driveStraight(speeds.ENHANCED_SPEED, 17.0, 45.0);  // Drive Forward 17" at 45 degrees (-12"x and 12"y)
+            turnToHeading( speeds.TURN_SPEED,   180.0);               // Turn  CW  to 0 Degrees
+            //holdHeading( speeds.TURN_SPEED,   0.0, 1.0);    // Hold  0 Deg heading for 1 second
 
-            turnToHeading(TURN_SPEED, 180.0);
+            //turnToHeading(speeds.TURN_SPEED, 180.0);
 
             launchThreeTimes();
 
-            turnToHeading(TURN_SPEED, 0.0);
+            turnToHeading(speeds.TURN_SPEED, 0.0);
 
-            driveStraight(DRIVE_SPEED,-48.0, 0.0);    // Drive in Reverse 48" (should return to approx. staring position)
+            driveStraight(speeds.HALF_SPEED,-48.0, 0.0);    // Drive in Reverse 48" (should return to approx. staring position)
 
             telemetry.addData("Path", "Complete");
             telemetry.update();
@@ -571,13 +571,74 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
         reportLaunchVelocityAndPower();
 
-        serveItUp();
-        serveItUp();
-        serveItUp();
+        if (continuousLaunchMode) {
+
+            tripleShot();
+
+        } else {
+
+            soloShot();
+            soloShot();
+            soloShot();
+
+        }
 
     }
 
-    void serveItUp() {
+    void tripleShot() {
+
+        launcher.setVelocity(speeds.LAUNCHER_TARGET_VELOCITY);
+
+        while (launcher.getVelocity() < speeds.LAUNCHER_TARGET_VELOCITY) {
+            sleep(10);
+            reportLaunchVelocityAndPower();
+        }
+
+        sleep(1000);
+
+        //first shot
+        leftFeeder.setPower(speeds.FULL_SPEED);
+        rightFeeder.setPower(speeds.FULL_SPEED);
+        feederTimer.reset();
+        while (feederTimer.seconds() < speeds.FEED_TIME_SECONDS) {
+            sleep(10);
+        }
+        reportLaunchVelocityAndPower();
+        leftFeeder.setPower(speeds.STOP_SPEED);
+        rightFeeder.setPower(speeds.STOP_SPEED);
+        sleep(2000);
+
+        //second shot
+        leftFeeder.setPower(speeds.FULL_SPEED);
+        rightFeeder.setPower(speeds.FULL_SPEED);
+        feederTimer.reset();
+        while (feederTimer.seconds() < speeds.FEED_TIME_SECONDS) {
+            sleep(10);
+        }
+        reportLaunchVelocityAndPower();
+        leftFeeder.setPower(speeds.STOP_SPEED);
+        rightFeeder.setPower(speeds.STOP_SPEED);
+        sleep(2000);
+
+        //third shot
+        leftFeeder.setPower(speeds.FULL_SPEED);
+        rightFeeder.setPower(speeds.FULL_SPEED);
+        feederTimer.reset();
+        while (feederTimer.seconds() < speeds.FEED_TIME_SECONDS) {
+            sleep(10);
+        }
+        reportLaunchVelocityAndPower();
+        leftFeeder.setPower(speeds.STOP_SPEED);
+        rightFeeder.setPower(speeds.STOP_SPEED);
+        sleep(2000);
+
+        launcher.setVelocity(speeds.STOP_SPEED);
+
+        sleep(2000);
+
+    }
+
+    void soloShot() {
 
         launcher.setVelocity(speeds.LAUNCHER_TARGET_VELOCITY);
 

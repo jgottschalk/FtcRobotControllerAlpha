@@ -135,7 +135,7 @@ public class BasicOmniOpMode_Linear extends OpMode {
 
     private boolean testMode = false;
 
-    double powerCoefficient = speeds.DEFAULT_POWER;
+    double powerCoefficient = speeds.DEFAULT_SPEED;
 
     double launcherVelocityAtLaunch = 0.0;
 
@@ -338,7 +338,7 @@ public class BasicOmniOpMode_Linear extends OpMode {
                 break;
 
             case SPIN_UP:
-                if (launcher.getVelocity() > speeds.LAUNCHER_MIN_VELOCITY) { //2nd match on 10/19 set to 1500
+                if (launcher.getVelocity() < speeds.LAUNCHER_MIN_VELOCITY) { //2nd match on 10/19 set to 1500
                     //no op
                 } else {
                     launchState = LaunchState.LAUNCH;
