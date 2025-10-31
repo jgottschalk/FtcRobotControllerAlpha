@@ -8,7 +8,7 @@ public class speeds {
 
     public final static double FULL_SPEED = 1.0;
 
-    public final static double LAUNCHER_TARGET_VELOCITY = 1200;
+    public final static double LAUNCHER_TARGET_VELOCITY = 1180;
     public final static double LAUNCHER_MIN_VELOCITY = LAUNCHER_TARGET_VELOCITY - 50;
 
     public final static double DEFAULT_SPEED = 0.7;

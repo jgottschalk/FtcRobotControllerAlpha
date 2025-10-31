@@ -91,6 +91,8 @@ public class BasicOmniOpMode_Linear extends OpMode {
 
     ElapsedTime feederTimer = new ElapsedTime();
 
+    ElapsedTime clawTimer = new ElapsedTime();
+
 
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -103,6 +105,8 @@ public class BasicOmniOpMode_Linear extends OpMode {
     private DcMotorEx launcher = null;
     private CRServo leftFeeder = null;
     private CRServo rightFeeder = null;
+
+    private CRServo claw = null;
 
     double launcherSpeed = 0.0;
 
@@ -158,6 +162,8 @@ public class BasicOmniOpMode_Linear extends OpMode {
         leftFeeder = hardwareMap.get(CRServo.class, "left_feeder"); // PORT 0
         rightFeeder = hardwareMap.get(CRServo.class, "right_feeder"); // PORT 2
 
+        claw = hardwareMap.get(CRServo.class, "ClawAI");
+
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
         // ########################################################################################
@@ -194,6 +200,8 @@ public class BasicOmniOpMode_Linear extends OpMode {
          */
         leftFeeder.setPower(speeds.STOP_SPEED);
         rightFeeder.setPower(speeds.STOP_SPEED);
+
+        claw.setPower(speeds.STOP_SPEED);
 
         //launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
         launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
@@ -256,6 +264,17 @@ public class BasicOmniOpMode_Linear extends OpMode {
             testMode = !testMode;
         }
 
+
+        if (gamepad1.dpad_up) {
+            clawTimer.reset();
+            claw.setPower(speeds.FULL_SPEED*-1);
+        }
+
+    if (clawTimer.seconds() > 2.0) {
+        claw.setPower(speeds.STOP_SPEED);
+    }
+
+
         if (testMode) {
             frontLeftPower  = gamepad1.x ? 1.0 : 0.0;  // SQUARE
             backLeftPower   = gamepad1.a ? 1.0 : 0.0;  // X
@@ -263,7 +282,6 @@ public class BasicOmniOpMode_Linear extends OpMode {
             backRightPower  = gamepad1.b ? 1.0 : 0.0;  // CIRCLE
 
         } else {
-
             if (gamepad1.dpad_up) {
                 powerCoefficient = 1.0;
             } else if (gamepad1.dpad_left || gamepad1.dpad_right) {
@@ -271,6 +289,7 @@ public class BasicOmniOpMode_Linear extends OpMode {
             } else if (gamepad1.dpad_down) {
                 powerCoefficient = 0.3;
             }
+
 
             frontLeftPower = frontLeftPower * powerCoefficient;
             frontRightPower = frontRightPower * powerCoefficient;

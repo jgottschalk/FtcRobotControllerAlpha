@@ -95,17 +95,17 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
  *  Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Short Circuits: Auto Drive By Gyro", group="Robot")
-//@Disabled
+@Autonomous(name="auto for Short Circuits", group="Robot")
+@Disabled
 public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
     /* Declare OpMode members. */
-    private DcMotor frontLeftDrive = null;
-    private DcMotor backLeftDrive = null;
-    private DcMotor frontRightDrive = null;
-    private DcMotor backRightDrive = null;
+    protected DcMotor frontLeftDrive = null;
+    protected DcMotor backLeftDrive = null;
+    protected DcMotor frontRightDrive = null;
+    protected DcMotor backRightDrive = null;
 
-    private IMU             imu         = null;      // Control/Expansion Hub IMU
+    protected IMU imu = null;      // Control/Expansion Hub IMU
 
     private double          headingError  = 0;
 
@@ -154,9 +154,9 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
 
 
-    private DcMotorEx launcher = null;
-    private CRServo leftFeeder = null;
-    private CRServo rightFeeder = null;
+    protected DcMotorEx launcher = null;
+    protected CRServo leftFeeder = null;
+    protected CRServo rightFeeder = null;
 
     ElapsedTime feederTimer = new ElapsedTime();
 
@@ -260,21 +260,57 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
             telemetry.update();
         }
 
-/*
-        int moveCounts = (int)(12 * COUNTS_PER_INCH);
+        //int moveCounts = (int)(12 * COUNTS_PER_INCH);
+        //testMotor("1.) Front Left", moveCounts, frontLeftDrive, true); //reporting 0
+        //testMotor("2.) Front Right", moveCounts, frontRightDrive, true); //reporting backwards
+        //testMotor("3.) Back Left", moveCounts, backLeftDrive, true);
+        //testMotor("4.) Back Right", moveCounts, backRightDrive, true);
 
-        testMotor("1.) Front Left", moveCounts, frontLeftDrive, true);
-        testMotor("2.) Front Right", moveCounts, frontRightDrive, true);
-        testMotor("3.) Back Left", moveCounts, backLeftDrive, true);
-        testMotor("4.) Back Right", moveCounts, backRightDrive, true);
-*/
+        //step 1.
+        driveStraight(speeds.DEFAULT_SPEED, 16.0, 0.0);
 
-            // Step through each leg of the path,
-            // Notes:   Reverse movement is obtained by setting a negative distance (not speed)
-            //          holdHeading() is used after turns to let the heading stabilize
-            //          Add a sleep(2000) after any step to keep the telemetry data visible for review
+        //step 2.
+        launchThreeTimes();
 
-            driveStraight(speeds.ENHANCED_SPEED, 24.0, 0.0);    // Drive Back 24
+        //step 3.
+        turnToHeading(speeds.TURN_SPEED, -45.0);
+        holdHeading(speeds.TURN_SPEED, -45.0, 0.5);
+
+        //step 4.
+        //(24 * 4) - 3 - 18 = 75
+        driveStraight(speeds.DEFAULT_SPEED, 53.0, -45.0);
+
+        //step 5.
+        turnToHeading(speeds.TURN_SPEED, 45.0);
+        holdHeading(speeds.TURN_SPEED, 45.0, 0.5);
+
+        //step 6.
+        //reduced for testing purposes: driveStraight(speeds.ENHANCED_SPEED, 72.0, 0.0);
+        driveStraight(speeds.DEFAULT_SPEED, 60.0, 45.0);
+
+        //step 7.
+        turnToHeading(speeds.TURN_SPEED, 135.0);
+        holdHeading(speeds.TURN_SPEED, 135.0, 0.5);
+
+        //step 8.
+        driveStraight(speeds.DEFAULT_SPEED, 9.0, 135.0);
+
+        //step 9.
+        turnToHeading(speeds.TURN_SPEED, 45.0);
+        holdHeading(speeds.TURN_SPEED, 45.0, 0.5);
+
+        //step 10.
+        driveStraight(speeds.DEFAULT_SPEED, 6.0, 45.0);
+
+
+
+        sleep(10000);  // Pause to display last telemetry message.
+
+    }
+
+    protected void pTestCase () {
+
+            driveStraight(speeds.ENHANCED_SPEED, 24.0, 0.0);    // Drive 24
 
             turnToHeading(speeds.TURN_SPEED, -45.0);               // Turn  CW to -45 Degrees
             //holdHeading(speeds.TURN_SPEED, -45.0, 0.5);   // Hold -45 Deg heading for a 1/2 second
@@ -287,8 +323,6 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
             turnToHeading( speeds.TURN_SPEED,   180.0);               // Turn  CW  to 0 Degrees
             //holdHeading( speeds.TURN_SPEED,   0.0, 1.0);    // Hold  0 Deg heading for 1 second
 
-            //turnToHeading(speeds.TURN_SPEED, 180.0);
-
             launchThreeTimes();
 
             turnToHeading(speeds.TURN_SPEED, 0.0);
@@ -300,6 +334,7 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
 
         sleep(10000);  // Pause to display last telemetry message.
+
 
     }
 
