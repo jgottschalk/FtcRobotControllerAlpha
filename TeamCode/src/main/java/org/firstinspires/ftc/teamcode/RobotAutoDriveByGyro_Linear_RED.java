@@ -94,7 +94,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
  *  Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name="RED auto for Short Circuits", group="Robot")
+@Autonomous(name="RED auto, Short Circuits", group="Robot")
 //@Disabled
 public class RobotAutoDriveByGyro_Linear_RED extends RobotAutoDriveByGyro_Linear {
 
@@ -152,44 +152,29 @@ public class RobotAutoDriveByGyro_Linear_RED extends RobotAutoDriveByGyro_Linear
         //testMotor("4.) Back Right", moveCounts, backRightDrive, true);
 
         //step 1.
-        driveStraight(speeds.HALF_SPEED, 16.0, 0.0);
+        driveStraight(speeds.SLOW_SPEED, 16.0, 0.0);
 
         //step 2.
         launchThreeTimes();
 
         //step 3.
-        driveStraight(speeds.DEFAULT_SPEED, 10.0, 0.0);
+        driveStraight(speeds.SLOW_SPEED, 34.0, 0.0);
 
         //step 4.
-        turnToHeading(speeds.TURN_SPEED, -40.0);
-        holdHeading(speeds.TURN_SPEED, -40.0, 0.5);
-
-        //step 5.
-        driveStraight(speeds.DEFAULT_SPEED, 60.0, -40.0);
-        holdHeading(speeds.TURN_SPEED, -45.0, 0.5);
-
-        //step 6.
         turnToHeading(speeds.TURN_SPEED, 45.0);
         holdHeading(speeds.TURN_SPEED, 45.0, 0.5);
 
-        //step 7.
-        driveStraight(speeds.DEFAULT_SPEED, 65.0, 45.0);
-        sleep(500);
+        //step 5.
+        //driveStraight(speeds.DEFAULT_SPEED, 20.0, 45.0);
+        //holdHeading(speeds.TURN_SPEED, 45.0, 0.5);
 
-        //step 8.
-        //turnToHeading(speeds.TURN_SPEED, -45.0);
-        //holdHeading(speeds.TURN_SPEED, -45.0, 0.5);
-
-        //step 8.
-        //driveStraight(speeds.DEFAULT_SPEED, 5.0, -45.0);
-        //sleep(500);
-
-        //step 9.
+        //step 6.
         //turnToHeading(speeds.TURN_SPEED, 45.0);
         //holdHeading(speeds.TURN_SPEED, 45.0, 0.5);
 
-        //step 10.
-        //driveStraight(speeds.DEFAULT_SPEED, 10.0, 45.0);
+        //step 7.
+        //driveStraight(speeds.DEFAULT_SPEED, 70.0, 45.0);
+        //sleep(500);
 
         sleep(10000);  // Pause to display last telemetry message.
 
