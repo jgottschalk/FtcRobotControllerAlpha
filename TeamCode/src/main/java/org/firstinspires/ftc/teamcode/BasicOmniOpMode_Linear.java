@@ -90,6 +90,7 @@ public class BasicOmniOpMode_Linear extends OpMode {
      */
 
     ElapsedTime feederTimer = new ElapsedTime();
+    ElapsedTime flipTimer = new ElapsedTime();
 
     ElapsedTime clawTimer = new ElapsedTime();
 
@@ -264,24 +265,27 @@ public class BasicOmniOpMode_Linear extends OpMode {
             testMode = !testMode;
         }
 
-
-        if (gamepad1.dpad_up) {
-            clawTimer.reset();
-            claw.setPower(speeds.FULL_SPEED*-1);
-        }
-
-    if (clawTimer.seconds() > 2.0) {
-        claw.setPower(speeds.STOP_SPEED);
-    }
-
-
         if (testMode) {
             frontLeftPower  = gamepad1.x ? 1.0 : 0.0;  // SQUARE
             backLeftPower   = gamepad1.a ? 1.0 : 0.0;  // X
             frontRightPower = gamepad1.y ? 1.0 : 0.0;  // TRIANGLE
             backRightPower  = gamepad1.b ? 1.0 : 0.0;  // CIRCLE
-
         } else {
+
+            if (gamepad1.dpad_up) {
+
+                flipTimer.reset();
+
+                while (flipTimer.seconds() < 0.3) {
+                    frontLeftDrive.setPower(speeds.FULL_SPEED);
+                    frontRightDrive.setPower(speeds.FULL_SPEED * -1);
+                    backLeftDrive.setPower(speeds.FULL_SPEED);
+                    backRightDrive.setPower(speeds.FULL_SPEED * -1);
+                }
+
+            } else {
+
+            /*
             if (gamepad1.dpad_up) {
                 powerCoefficient = 1.0;
             } else if (gamepad1.dpad_left || gamepad1.dpad_right) {
@@ -289,12 +293,14 @@ public class BasicOmniOpMode_Linear extends OpMode {
             } else if (gamepad1.dpad_down) {
                 powerCoefficient = 0.3;
             }
+            */
 
+                frontLeftPower = frontLeftPower * powerCoefficient;
+                frontRightPower = frontRightPower * powerCoefficient;
+                backLeftPower = backLeftPower * powerCoefficient;
+                backRightPower = backRightPower * powerCoefficient;
 
-            frontLeftPower = frontLeftPower * powerCoefficient;
-            frontRightPower = frontRightPower * powerCoefficient;
-            backLeftPower = backLeftPower * powerCoefficient;
-            backRightPower = backRightPower * powerCoefficient;
+            }
 
         }
 

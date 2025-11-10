@@ -190,9 +190,6 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
         drive.setTargetPosition(target);
         drive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        //ElapsedTime testTimer = new ElapsedTime();
-        //testTimer.seconds() < 2.0
-
         while (opModeIsActive() && drive.isBusy()) {
             drive.setPower(power);
             telemetry.addData(motorLabel + " power(" + power + ") pos ", drive.getCurrentPosition());
@@ -266,44 +263,6 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
         //testMotor("3.) Back Left", moveCounts, backLeftDrive, true);
         //testMotor("4.) Back Right", moveCounts, backRightDrive, true);
 
-        //step 1.
-        driveStraight(speeds.DEFAULT_SPEED, 16.0, 0.0);
-
-        //step 2.
-        launchThreeTimes();
-
-        //step 3.
-        turnToHeading(speeds.TURN_SPEED, -45.0);
-        holdHeading(speeds.TURN_SPEED, -45.0, 0.5);
-
-        //step 4.
-        //(24 * 4) - 3 - 18 = 75
-        driveStraight(speeds.DEFAULT_SPEED, 53.0, -45.0);
-
-        //step 5.
-        turnToHeading(speeds.TURN_SPEED, 45.0);
-        holdHeading(speeds.TURN_SPEED, 45.0, 0.5);
-
-        //step 6.
-        //reduced for testing purposes: driveStraight(speeds.ENHANCED_SPEED, 72.0, 0.0);
-        driveStraight(speeds.DEFAULT_SPEED, 60.0, 45.0);
-
-        //step 7.
-        turnToHeading(speeds.TURN_SPEED, 135.0);
-        holdHeading(speeds.TURN_SPEED, 135.0, 0.5);
-
-        //step 8.
-        driveStraight(speeds.DEFAULT_SPEED, 9.0, 135.0);
-
-        //step 9.
-        turnToHeading(speeds.TURN_SPEED, 45.0);
-        holdHeading(speeds.TURN_SPEED, 45.0, 0.5);
-
-        //step 10.
-        driveStraight(speeds.DEFAULT_SPEED, 6.0, 45.0);
-
-
-
         sleep(10000);  // Pause to display last telemetry message.
 
     }
@@ -332,9 +291,7 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
             telemetry.addData("Path", "Complete");
             telemetry.update();
 
-
         sleep(10000);  // Pause to display last telemetry message.
-
 
     }
 
@@ -384,7 +341,6 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
             backLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             backRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-
             // Set the required driving speed  (must be positive for RUN_TO_POSITION)
             // Start driving straight, and then enter the control loop
             maxDriveSpeed = Math.abs(maxDriveSpeed);
@@ -424,11 +380,9 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
     /**
      *  Spin on the central axis to point in a new direction.
-     *  <p>
+     *
      *  Move will stop if either of these conditions occur:
-     *  <p>
      *  1) Move gets to the heading (angle)
-     *  <p>
      *  2) Driver stops the OpMode running.
      *
      * @param maxTurnSpeed Desired MAX speed of turn. (range 0 to +1.0)
@@ -508,6 +462,7 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
      * @return                      Turning power needed to get to required heading.
      */
     public double getSteeringCorrection(double desiredHeading, double proportionalGain) {
+
         targetHeading = desiredHeading;  // Save for telemetry
 
         // Determine the heading current error
@@ -528,6 +483,7 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
      * @param turn  clockwise turning motor speed.
      */
     public void moveRobot(double drive, double turn) {
+
         driveSpeed = drive;     // save this value as a class member so it can be used by telemetry.
         turnSpeed  = turn;      // save this value as a class member so it can be used by telemetry.
 
