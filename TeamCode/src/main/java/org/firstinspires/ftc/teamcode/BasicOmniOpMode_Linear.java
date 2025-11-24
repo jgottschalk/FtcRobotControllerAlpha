@@ -31,8 +31,6 @@ package org.firstinspires.ftc.teamcode;
 
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 
-//import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-//import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -90,10 +88,6 @@ public class BasicOmniOpMode_Linear extends OpMode {
      */
 
     ElapsedTime feederTimer = new ElapsedTime();
-    ElapsedTime flipTimer = new ElapsedTime();
-
-    ElapsedTime clawTimer = new ElapsedTime();
-
 
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -104,12 +98,12 @@ public class BasicOmniOpMode_Linear extends OpMode {
     private DcMotor backRightDrive = null;
 
     private DcMotorEx launcher = null;
+
+    private DcMotorEx intake = null;
     private CRServo leftFeeder = null;
     private CRServo rightFeeder = null;
 
-    private CRServo claw = null;
-
-    double launcherSpeed = 0.0;
+    private double launcherSpeed = 0.0;
 
     /*
      * TECH TIP: State Machines
@@ -140,6 +134,8 @@ public class BasicOmniOpMode_Linear extends OpMode {
 
     private boolean testMode = false;
 
+    private boolean pauseIntake = false;
+
     double powerCoefficient = speeds.DEFAULT_SPEED;
 
     double launcherVelocityAtLaunch = 0.0;
@@ -163,7 +159,7 @@ public class BasicOmniOpMode_Linear extends OpMode {
         leftFeeder = hardwareMap.get(CRServo.class, "left_feeder"); // PORT 0
         rightFeeder = hardwareMap.get(CRServo.class, "right_feeder"); // PORT 2
 
-        claw = hardwareMap.get(CRServo.class, "ClawAI");
+        intake = hardwareMap.get(DcMotorEx.class, "Intook");
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -202,12 +198,8 @@ public class BasicOmniOpMode_Linear extends OpMode {
         leftFeeder.setPower(speeds.STOP_SPEED);
         rightFeeder.setPower(speeds.STOP_SPEED);
 
-        claw.setPower(speeds.STOP_SPEED);
-
-        //launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
         launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
         launcher.setDirection(DcMotorSimple.Direction.REVERSE);
-
 
         /*
          * Much like our drivetrain motors, we set the left feeder servo to reverse so that they
@@ -215,7 +207,6 @@ public class BasicOmniOpMode_Linear extends OpMode {
          */
         leftFeeder.setDirection(DcMotorSimple.Direction.FORWARD);
         rightFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
-
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -233,6 +224,13 @@ public class BasicOmniOpMode_Linear extends OpMode {
     public void loop() {
 
         // run until the end of the match (driver presses STOP)
+        if (pauseIntake
+                || (launchState.equals(LaunchState.LAUNCHING))
+        ) {
+            intake.setPower(speeds.STOP_SPEED);
+        } else {
+            intake.setPower(speeds.FULL_SPEED);
+        }
 
             double max;
 
@@ -265,25 +263,16 @@ public class BasicOmniOpMode_Linear extends OpMode {
             testMode = !testMode;
         }
 
+        if (gamepad1.dpad_up) {
+            pauseIntake = !pauseIntake;
+        }
+
         if (testMode) {
             frontLeftPower  = gamepad1.x ? 1.0 : 0.0;  // SQUARE
             backLeftPower   = gamepad1.a ? 1.0 : 0.0;  // X
             frontRightPower = gamepad1.y ? 1.0 : 0.0;  // TRIANGLE
             backRightPower  = gamepad1.b ? 1.0 : 0.0;  // CIRCLE
         } else {
-
-            if (gamepad1.dpad_up) {
-
-                flipTimer.reset();
-
-                while (flipTimer.seconds() < 0.3) {
-                    frontLeftDrive.setPower(speeds.FULL_SPEED);
-                    frontRightDrive.setPower(speeds.FULL_SPEED * -1);
-                    backLeftDrive.setPower(speeds.FULL_SPEED);
-                    backRightDrive.setPower(speeds.FULL_SPEED * -1);
-                }
-
-            } else {
 
             /*
             if (gamepad1.dpad_up) {
@@ -295,12 +284,10 @@ public class BasicOmniOpMode_Linear extends OpMode {
             }
             */
 
-                frontLeftPower = frontLeftPower * powerCoefficient;
-                frontRightPower = frontRightPower * powerCoefficient;
-                backLeftPower = backLeftPower * powerCoefficient;
-                backRightPower = backRightPower * powerCoefficient;
-
-            }
+            frontLeftPower = frontLeftPower * powerCoefficient;
+            frontRightPower = frontRightPower * powerCoefficient;
+            backLeftPower = backLeftPower * powerCoefficient;
+            backRightPower = backRightPower * powerCoefficient;
 
         }
 
@@ -310,7 +297,11 @@ public class BasicOmniOpMode_Linear extends OpMode {
         backLeftDrive.setPower(backLeftPower);
         backRightDrive.setPower(backRightPower);
 
-        launch((gamepad1.rightBumperWasPressed() || gamepad1.leftBumperWasPressed()), gamepad1.y, gamepad1.b);
+        launch(
+                (  gamepad1.rightBumperWasPressed()
+                || gamepad1.leftBumperWasPressed()
+                ),
+                gamepad1.y, gamepad1.b);
 
         // update drive hub display
         telemetry.addData("status", "Run Time: " + runtime.toString());
@@ -363,6 +354,7 @@ public class BasicOmniOpMode_Linear extends OpMode {
                 break;
 
             case SPIN_UP:
+
                 if (launcher.getVelocity() < speeds.LAUNCHER_MIN_VELOCITY) { //2nd match on 10/19 set to 1500
                     //no op
                 } else {

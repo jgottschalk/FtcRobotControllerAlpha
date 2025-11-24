@@ -108,6 +108,7 @@ public class RobotAutoDriveByGyro_Linear_RED extends RobotAutoDriveByGyro_Linear
         backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
 
         launcher = hardwareMap.get(DcMotorEx.class, "launcher");
+        intake = hardwareMap.get(DcMotorEx.class, "Intook");
         leftFeeder = hardwareMap.get(CRServo.class, "left_feeder"); // PORT 0
         rightFeeder = hardwareMap.get(CRServo.class, "right_feeder"); // PORT 2
 
@@ -153,17 +154,21 @@ public class RobotAutoDriveByGyro_Linear_RED extends RobotAutoDriveByGyro_Linear
         //testMotor("4.) Back Right", moveCounts, backRightDrive, true);
 
         //step 1.
-        driveStraight(0.1, 16.0, 0.0);
+        driveStraight(0.15, 16.0, 0.0);
 
         //step 2.
         launchThreeTimes();
 
         //step 3.
-        driveStraight(speeds.HALF_SPEED, 12.0, -45.0);
-        driveStraight(speeds.HALF_SPEED, 12.0, -22.5);
-        driveStraight(speeds.HALF_SPEED, 12.0, 0.0);
-        driveStraight(speeds.HALF_SPEED, 12.0, 22.5);
-        driveStraight(speeds.HALF_SPEED, 35.0, 70.0);
+        driveStraight(speeds.DEFAULT_SPEED, 18.0, 0.0);
+
+        turnToHeading(  speeds.TURN_SPEED,   30.0);
+
+        driveStraight(speeds.DEFAULT_SPEED, 12.0, 30.0);
+
+        turnToHeading(  speeds.TURN_SPEED,   45.0);
+
+        driveStraight(speeds.SLOW_SPEED, 22.0, 45.0);
 
         sleep(10000);  // Pause to display last telemetry message.
 

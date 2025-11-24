@@ -88,9 +88,9 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
  *  Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name="CLOSE Start - BLUE", group="Robot")
+@Autonomous(name="DISTANT Start - BLUE", group="Robot")
 //@Disabled
-public class RobotAutoDriveByGyro_Linear_BLUE extends RobotAutoDriveByGyro_Linear {
+public class RobotAutoDriveByGyro_Linear_DistantStart_BLUE extends RobotAutoDriveByGyro_Linear {
 
     @Override
     public void runOpMode() {
@@ -119,7 +119,6 @@ public class RobotAutoDriveByGyro_Linear_BLUE extends RobotAutoDriveByGyro_Linea
         RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
 
         // Now initialize the IMU with this mounting orientation
-        // This sample expects the IMU to be in a REV Hub and named "imu".
         imu = hardwareMap.get(IMU.class, "imu");
         imu.initialize(new IMU.Parameters(orientationOnRobot));
         imu.resetYaw();
@@ -141,30 +140,23 @@ public class RobotAutoDriveByGyro_Linear_BLUE extends RobotAutoDriveByGyro_Linea
             telemetry.update();
         }
 
-        //int moveCounts = (int)(12 * COUNTS_PER_INCH);
-        //testMotor("1.) Front Left", moveCounts, frontLeftDrive, true); //reporting 0
-        //testMotor("2.) Front Right", moveCounts, frontRightDrive, true); //reporting backwards
-        //testMotor("3.) Back Left", moveCounts, backLeftDrive, true);
-        //testMotor("4.) Back Right", moveCounts, backRightDrive, true);
-
-        //step 1.
-        driveStraight(speeds.SLOW_SPEED, 16.0, 0.0);
-
-        //step 2.
+        //1.
+        driveStraight(  speeds.DEFAULT_SPEED, 63.0, 0.0);
+        //2.
+        turnToHeading(  speeds.SLOW_SPEED,   45.0);
+        holdHeading(    speeds.SLOW_SPEED,   45.0, 0.25);
+        //3.
+        driveStraight(  speeds.DEFAULT_SPEED, 41.0, 45.0);
+        //4.
+        turnToHeading(  speeds.SLOW_SPEED,   -135.0);
+        holdHeading(    speeds.SLOW_SPEED,   -135.0, 0.25);
+        //5.
         launchThreeTimes();
-
-        //step 3.
-        driveStraight(speeds.DEFAULT_SPEED, 12.0, 0.0);
-
-        turnToHeading(  speeds.TURN_SPEED,   -25.0);
-        holdHeading(    speeds.TURN_SPEED,   -25.0, 0.25);
-
-        driveStraight(speeds.DEFAULT_SPEED, 12.0, -25.0);
-
-        turnToHeading(  speeds.TURN_SPEED,   -45.0);
-        holdHeading(    speeds.TURN_SPEED,   -45.0, 0.25);
-
-        driveStraight(speeds.DEFAULT_SPEED, 24.0, -45.0);
+        //6.
+        driveStraight(  speeds.FULL_SPEED, 30.0, -135.0);
+        turnToHeading(  speeds.TURN_SPEED,   170.0);
+        holdHeading(    speeds.TURN_SPEED,   170.0, 0.25);
+        driveStraight(  speeds.FULL_SPEED, 45.0, 170.0);
 
         sleep(10000);  // Pause to display last telemetry message.
 

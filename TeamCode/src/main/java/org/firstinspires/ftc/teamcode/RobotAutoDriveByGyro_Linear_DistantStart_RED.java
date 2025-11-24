@@ -102,6 +102,7 @@ public class RobotAutoDriveByGyro_Linear_DistantStart_RED extends RobotAutoDrive
         backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
 
         launcher = hardwareMap.get(DcMotorEx.class, "launcher");
+        intake = hardwareMap.get(DcMotorEx.class, "Intook");
         leftFeeder = hardwareMap.get(CRServo.class, "left_feeder"); // PORT 0
         rightFeeder = hardwareMap.get(CRServo.class, "right_feeder"); // PORT 2
 
@@ -139,23 +140,23 @@ public class RobotAutoDriveByGyro_Linear_DistantStart_RED extends RobotAutoDrive
             telemetry.update();
         }
 
-        //1. +24" for production
-        driveStraight(  speeds.SLOW_SPEED, 39.0, 0.0);
+        //1.
+        driveStraight(  speeds.DEFAULT_SPEED, 63.0, 0.0);
         //2.
-        turnToHeading(  speeds.TURN_SPEED,   -45.0);
-        holdHeading(    speeds.TURN_SPEED,   -45.0, 0.25);
+        turnToHeading(  speeds.SLOW_SPEED,   -45.0);
+        holdHeading(    speeds.SLOW_SPEED,   -45.0, 0.25);
         //3.
-        driveStraight(  speeds.SLOW_SPEED, 34.0, -45.0);
+        driveStraight(  speeds.DEFAULT_SPEED, 41.0, -45.0);
         //4.
-        turnToHeading(  speeds.TURN_SPEED,   135.0);
-        holdHeading(    speeds.TURN_SPEED,   135.0, 0.25);
+        turnToHeading(  speeds.SLOW_SPEED,   135.0);
+        holdHeading(    speeds.SLOW_SPEED,   135.0, 0.25);
         //5.
         launchThreeTimes();
         //6.
-        driveStraight(  speeds.DEFAULT_SPEED, 24.0, 135.0);
-        turnToHeading(  speeds.TURN_SPEED,   180.0);
-        holdHeading(    speeds.TURN_SPEED,   180.0, 0.25);
-        driveStraight(  speeds.DEFAULT_SPEED, 30.0, 180.0);
+        driveStraight(  speeds.FULL_SPEED, 24.0, 135.0);
+        turnToHeading(  speeds.TURN_SPEED,   170.0);
+        holdHeading(    speeds.TURN_SPEED,   170.0, 0.25);
+        driveStraight(  speeds.FULL_SPEED, 45.0, 170.0);
 
         sleep(10000);  // Pause to display last telemetry message.
 

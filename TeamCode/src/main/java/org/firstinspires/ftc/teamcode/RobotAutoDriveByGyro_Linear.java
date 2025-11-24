@@ -155,6 +155,8 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
 
     protected DcMotorEx launcher = null;
+
+    protected DcMotorEx intake = null;
     protected CRServo leftFeeder = null;
     protected CRServo rightFeeder = null;
 
@@ -220,8 +222,12 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
         backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
 
         launcher = hardwareMap.get(DcMotorEx.class, "launcher");
+        intake = hardwareMap.get(DcMotorEx.class, "Intook");
+
         leftFeeder = hardwareMap.get(CRServo.class, "left_feeder"); // PORT 0
         rightFeeder = hardwareMap.get(CRServo.class, "right_feeder"); // PORT 2
+
+
 
         frontLeftDrive.setDirection(DcMotor.Direction.FORWARD); //validated as REVERSE
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);  //validated as FORWARD
@@ -578,6 +584,8 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
     void tripleShot() {
 
+        intake.setPower(speeds.FULL_SPEED);
+
         launcher.setVelocity(speeds.LAUNCHER_TARGET_VELOCITY);
 
         while (launcher.getVelocity() < speeds.LAUNCHER_TARGET_VELOCITY) {
@@ -587,17 +595,25 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
         sleep(1000);
 
+        //intake.setPower(speeds.STOP_SPEED);
+
         //first shot
         leftFeeder.setPower(speeds.FULL_SPEED);
         rightFeeder.setPower(speeds.FULL_SPEED);
         feederTimer.reset();
+
         while (feederTimer.seconds() < speeds.FEED_TIME_SECONDS) {
             sleep(10);
         }
         reportLaunchVelocityAndPower();
         leftFeeder.setPower(speeds.STOP_SPEED);
         rightFeeder.setPower(speeds.STOP_SPEED);
+
+        //intake.setPower(speeds.FULL_SPEED);
+
         sleep(2000);
+
+        //intake.setPower(speeds.STOP_SPEED);
 
         //second shot
         leftFeeder.setPower(speeds.FULL_SPEED);
@@ -609,7 +625,12 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
         reportLaunchVelocityAndPower();
         leftFeeder.setPower(speeds.STOP_SPEED);
         rightFeeder.setPower(speeds.STOP_SPEED);
+
+        //intake.setPower(speeds.FULL_SPEED);
+
         sleep(2000);
+
+        //intake.setPower(speeds.STOP_SPEED);
 
         //third shot
         leftFeeder.setPower(speeds.FULL_SPEED);
@@ -621,11 +642,11 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
         reportLaunchVelocityAndPower();
         leftFeeder.setPower(speeds.STOP_SPEED);
         rightFeeder.setPower(speeds.STOP_SPEED);
-        sleep(2000);
+        sleep(3000);
 
         launcher.setVelocity(speeds.STOP_SPEED);
-
-        sleep(2000);
+        intake.setPower(speeds.STOP_SPEED);
+        //sleep(2000);
 
     }
 

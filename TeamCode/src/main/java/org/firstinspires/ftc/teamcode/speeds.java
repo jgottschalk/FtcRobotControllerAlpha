@@ -20,6 +20,6 @@ public class speeds {
     public final static double TURN_SPEED = 0.6;     // Max turn speed to limit turn rate.
 
 
-    public final static double FEED_TIME_SECONDS = 0.25; //The feeder servos run this long when a shot is requested.
+    public final static double FEED_TIME_SECONDS = 1.00; //The feeder servos run this long when a shot is requested.
 
 }
