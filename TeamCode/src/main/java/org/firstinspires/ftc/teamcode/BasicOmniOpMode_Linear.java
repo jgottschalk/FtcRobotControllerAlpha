@@ -103,6 +103,11 @@ public class BasicOmniOpMode_Linear extends OpMode {
     private CRServo leftFeeder = null;
     private CRServo rightFeeder = null;
 
+    private CRServo leftLift = null;
+    private CRServo rightLift = null;
+
+
+
     private double launcherSpeed = 0.0;
 
     /*
@@ -159,6 +164,9 @@ public class BasicOmniOpMode_Linear extends OpMode {
         leftFeeder = hardwareMap.get(CRServo.class, "left_feeder"); // PORT 0
         rightFeeder = hardwareMap.get(CRServo.class, "right_feeder"); // PORT 2
 
+        leftLift = hardwareMap.get(CRServo.class, "LiftLeft");
+        rightLift = hardwareMap.get(CRServo.class, "LiftRight");
+
         intake = hardwareMap.get(DcMotorEx.class, "Intook");
 
         // ########################################################################################
@@ -198,6 +206,10 @@ public class BasicOmniOpMode_Linear extends OpMode {
         leftFeeder.setPower(speeds.STOP_SPEED);
         rightFeeder.setPower(speeds.STOP_SPEED);
 
+        leftLift.setPower(speeds.STOP_SPEED);
+        rightLift.setPower(speeds.STOP_SPEED);
+
+
         launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
         launcher.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -207,6 +219,10 @@ public class BasicOmniOpMode_Linear extends OpMode {
          */
         leftFeeder.setDirection(DcMotorSimple.Direction.FORWARD);
         rightFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        leftLift.setDirection(DcMotorSimple.Direction.FORWARD);
+        rightLift.setDirection(DcMotorSimple.Direction.REVERSE);
+
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -263,9 +279,20 @@ public class BasicOmniOpMode_Linear extends OpMode {
             testMode = !testMode;
         }
 
-        if (gamepad1.dpad_up) {
+        if ((gamepad1.right_trigger >= 0.2) || (gamepad1.left_trigger >= 0.2) ) {
             pauseIntake = !pauseIntake;
         }
+
+        if (gamepad1.dpad_up) {
+            leftLift.setPower(speeds.FULL_SPEED);
+            rightLift.setPower(speeds.FULL_SPEED);
+        }
+
+        if (gamepad1.dpad_down) {
+            leftLift.setPower(speeds.STOP_SPEED);
+            rightLift.setPower(speeds.STOP_SPEED);
+        }
+
 
         if (testMode) {
             frontLeftPower  = gamepad1.x ? 1.0 : 0.0;  // SQUARE
@@ -365,6 +392,7 @@ public class BasicOmniOpMode_Linear extends OpMode {
             case LAUNCH:
                 leftFeeder.setPower(speeds.FULL_SPEED);
                 rightFeeder.setPower(speeds.FULL_SPEED);
+
                 feederTimer.reset();
                 launchState = LaunchState.LAUNCHING;
                 break;

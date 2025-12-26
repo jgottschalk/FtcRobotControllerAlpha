@@ -161,7 +161,8 @@ public class RobotAutoDriveByGyro_Linear_RED extends RobotAutoDriveByGyro_Linear
 
         //step 3.
         driveStraight(speeds.DEFAULT_SPEED, 18.0, 0.0);
-
+        turnToHeading(speeds.TURN_SPEED,  -45.0 );
+        driveStraight(speeds.DEFAULT_SPEED, 60.0, -45.0);
         turnToHeading(  speeds.TURN_SPEED,   30.0);
 
         driveStraight(speeds.DEFAULT_SPEED, 12.0, 30.0);
