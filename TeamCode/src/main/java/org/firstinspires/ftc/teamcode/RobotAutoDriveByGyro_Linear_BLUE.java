@@ -39,6 +39,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
 
 /*
  *  This OpMode illustrates the concept of driving an autonomous path based on Gyro (IMU) heading and encoder counts.
@@ -141,32 +142,39 @@ public class RobotAutoDriveByGyro_Linear_BLUE extends RobotAutoDriveByGyro_Linea
             telemetry.update();
         }
 
-        //int moveCounts = (int)(12 * COUNTS_PER_INCH);
-        //testMotor("1.) Front Left", moveCounts, frontLeftDrive, true); //reporting 0
-        //testMotor("2.) Front Right", moveCounts, frontRightDrive, true); //reporting backwards
-        //testMotor("3.) Back Left", moveCounts, backLeftDrive, true);
-        //testMotor("4.) Back Right", moveCounts, backRightDrive, true);
+        //step 1. position for first launch
+        driveStraight(speeds.SLOW_SPEED, 13.0, 0.0);
 
-        //step 1.
-        driveStraight(speeds.SLOW_SPEED, 16.0, 0.0);
+        //step 2. shoot
+        launchArtifacts(3);
 
-        //step 2.
-        launchThreeTimes();
+        //step 3. position for artifact pick-up
+        driveStraight(0.6, 33.0, 0.0);
+        turnToHeading(0.3, 45.0);
+        sleep(500);
 
-        //step 3.
-        driveStraight(speeds.DEFAULT_SPEED, 12.0, 0.0);
+        //step 4. pick-up first artifact
+        intake.setPower(speeds.FULL_SPEED);
+        driveStraight(0.4, -12.0, 45.0);
+        driveStraight(0.1, -12.0, 45.0);
 
-        turnToHeading(  speeds.TURN_SPEED,   -25.0);
-        holdHeading(    speeds.TURN_SPEED,   -25.0, 0.25);
+        sleep(250);
 
-        driveStraight(speeds.DEFAULT_SPEED, 12.0, -25.0);
+        //step 6. return to shooting position
+        turnToHeading(speeds.TURN_SPEED,  135.0);
+        driveStraight(speeds.FULL_SPEED, 21.0, 135.0);
+        turnToHeading(speeds.TURN_SPEED,  0.0);
 
-        turnToHeading(  speeds.TURN_SPEED,   -45.0);
-        holdHeading(    speeds.TURN_SPEED,   -45.0, 0.25);
+        //step 7. launch twice
+        launchArtifacts(2, false);
 
-        driveStraight(speeds.DEFAULT_SPEED, 24.0, -45.0);
+        intake.setPower(speeds.STOP_SPEED);
 
-        sleep(10000);  // Pause to display last telemetry message.
+        //step 8. park in final location
+        turnToHeading(speeds.TURN_SPEED,   -30.0);
+        driveStraight(speeds.FULL_SPEED, 12.0, -30.0);
+        turnToHeading(speeds.TURN_SPEED,   -45.0);
+        driveStraight(speeds.FULL_SPEED, 22.0, -45.0);
 
     }
 

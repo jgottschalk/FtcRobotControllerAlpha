@@ -87,7 +87,9 @@ public class BasicOmniOpMode_Linear extends OpMode {
      * at. The minimum velocity is a threshold for determining when to fire.
      */
 
-    ElapsedTime feederTimer = new ElapsedTime();
+    private ElapsedTime feederTimer = new ElapsedTime();
+
+    private ElapsedTime liftTimer = new ElapsedTime();
 
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -103,9 +105,8 @@ public class BasicOmniOpMode_Linear extends OpMode {
     private CRServo leftFeeder = null;
     private CRServo rightFeeder = null;
 
-    private CRServo leftLift = null;
-    private CRServo rightLift = null;
-
+    //private Servo leftLift = null;
+    //private Servo rightLift = null;
 
 
     private double launcherSpeed = 0.0;
@@ -164,8 +165,8 @@ public class BasicOmniOpMode_Linear extends OpMode {
         leftFeeder = hardwareMap.get(CRServo.class, "left_feeder"); // PORT 0
         rightFeeder = hardwareMap.get(CRServo.class, "right_feeder"); // PORT 2
 
-        leftLift = hardwareMap.get(CRServo.class, "LiftLeft");
-        rightLift = hardwareMap.get(CRServo.class, "LiftRight");
+        //leftLift = hardwareMap.get(Servo.class, "LiftLeft");
+        //rightLift = hardwareMap.get(Servo.class, "LiftRight");
 
         intake = hardwareMap.get(DcMotorEx.class, "Intook");
 
@@ -206,9 +207,11 @@ public class BasicOmniOpMode_Linear extends OpMode {
         leftFeeder.setPower(speeds.STOP_SPEED);
         rightFeeder.setPower(speeds.STOP_SPEED);
 
-        leftLift.setPower(speeds.STOP_SPEED);
-        rightLift.setPower(speeds.STOP_SPEED);
+        //leftFeeder.setPosition(0);
+        //rightFeeder.setPosition(0);
 
+        //leftLift.setPosition(0);
+        //rightLift.setPosition(0);
 
         launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
         launcher.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -217,12 +220,23 @@ public class BasicOmniOpMode_Linear extends OpMode {
          * Much like our drivetrain motors, we set the left feeder servo to reverse so that they
          * both work to feed the ball into the robot.
          */
-        leftFeeder.setDirection(DcMotorSimple.Direction.FORWARD);
-        rightFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
+        //leftFeeder.setDirection(DcMotorSimple.Direction.FORWARD);
+        //rightFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftFeeder.setDirection(CRServo.Direction.FORWARD);
+        rightFeeder.setDirection(CRServo.Direction.REVERSE);
 
-        leftLift.setDirection(DcMotorSimple.Direction.FORWARD);
-        rightLift.setDirection(DcMotorSimple.Direction.REVERSE);
+        //leftFeeder.setPosition(0);
+        //rightFeeder.setPosition(0);
+        //leftFeeder.setPosition(180.0);
+        //rightFeeder.setPosition(180.0);
+        //leftFeeder.setPosition(0);
+        //rightFeeder.setPosition(0);
 
+        //leftLift.setPosition(0);
+        //rightLift.setPosition(0);
+
+        //leftLift.setDirection(DcMotorSimple.Direction.REVERSE);
+        //rightLift.setDirection(DcMotorSimple.Direction.FORWARD);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -240,8 +254,7 @@ public class BasicOmniOpMode_Linear extends OpMode {
     public void loop() {
 
         // run until the end of the match (driver presses STOP)
-        if (pauseIntake
-                || (launchState.equals(LaunchState.LAUNCHING))
+        if (pauseIntake || (launchState.equals(LaunchState.LAUNCHING))
         ) {
             intake.setPower(speeds.STOP_SPEED);
         } else {
@@ -279,20 +292,23 @@ public class BasicOmniOpMode_Linear extends OpMode {
             testMode = !testMode;
         }
 
-        if ((gamepad1.right_trigger >= 0.2) || (gamepad1.left_trigger >= 0.2) ) {
+        if (gamepad1.y) {
             pauseIntake = !pauseIntake;
         }
 
+        /*
         if (gamepad1.dpad_up) {
-            leftLift.setPower(speeds.FULL_SPEED);
-            rightLift.setPower(speeds.FULL_SPEED);
+            //liftTimer.reset();
+            leftLift.setPosition(5);
+            rightLift.setPosition(5);
         }
 
         if (gamepad1.dpad_down) {
-            leftLift.setPower(speeds.STOP_SPEED);
-            rightLift.setPower(speeds.STOP_SPEED);
+            //liftTimer.reset();
+            leftLift.setPosition(0);
+            rightLift.setPosition(0);
         }
-
+        */
 
         if (testMode) {
             frontLeftPower  = gamepad1.x ? 1.0 : 0.0;  // SQUARE
@@ -300,22 +316,10 @@ public class BasicOmniOpMode_Linear extends OpMode {
             frontRightPower = gamepad1.y ? 1.0 : 0.0;  // TRIANGLE
             backRightPower  = gamepad1.b ? 1.0 : 0.0;  // CIRCLE
         } else {
-
-            /*
-            if (gamepad1.dpad_up) {
-                powerCoefficient = 1.0;
-            } else if (gamepad1.dpad_left || gamepad1.dpad_right) {
-                powerCoefficient = 0.75;
-            } else if (gamepad1.dpad_down) {
-                powerCoefficient = 0.3;
-            }
-            */
-
             frontLeftPower = frontLeftPower * powerCoefficient;
             frontRightPower = frontRightPower * powerCoefficient;
             backLeftPower = backLeftPower * powerCoefficient;
             backRightPower = backRightPower * powerCoefficient;
-
         }
 
         // Send calculated power to wheels
@@ -324,11 +328,9 @@ public class BasicOmniOpMode_Linear extends OpMode {
         backLeftDrive.setPower(backLeftPower);
         backRightDrive.setPower(backRightPower);
 
-        launch(
-                (  gamepad1.rightBumperWasPressed()
+        launch((  gamepad1.rightBumperWasPressed()
                 || gamepad1.leftBumperWasPressed()
-                ),
-                gamepad1.y, gamepad1.b);
+                ));
 
         // update drive hub display
         telemetry.addData("status", "Run Time: " + runtime.toString());
@@ -343,7 +345,7 @@ public class BasicOmniOpMode_Linear extends OpMode {
 
     }
 
-    void launch(boolean shotRequested, boolean spinupRequested, boolean spinDownRequested) {
+    void launch(boolean shotRequested) {
 
         /*
          * Here we give the user control of the speed of the launcher motor without automatically
@@ -393,6 +395,9 @@ public class BasicOmniOpMode_Linear extends OpMode {
                 leftFeeder.setPower(speeds.FULL_SPEED);
                 rightFeeder.setPower(speeds.FULL_SPEED);
 
+                //leftFeeder.setPosition(180.0);
+                //rightFeeder.setPosition(180.0);
+
                 feederTimer.reset();
                 launchState = LaunchState.LAUNCHING;
                 break;
@@ -405,6 +410,8 @@ public class BasicOmniOpMode_Linear extends OpMode {
                     launcher.setVelocity(speeds.STOP_SPEED);
                     leftFeeder.setPower(speeds.STOP_SPEED);
                     rightFeeder.setPower(speeds.STOP_SPEED);
+                    //leftFeeder.setPosition(0);
+                    //rightFeeder.setPosition(0);
                 }
                 break;
         }

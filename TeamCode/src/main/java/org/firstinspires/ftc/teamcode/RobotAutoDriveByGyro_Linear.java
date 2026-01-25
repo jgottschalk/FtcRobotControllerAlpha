@@ -41,6 +41,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -162,7 +163,11 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
     ElapsedTime feederTimer = new ElapsedTime();
 
-    private boolean continuousLaunchMode = true;
+    protected ElapsedTime liftTimer = new ElapsedTime();
+
+    protected Servo leftLift = null;
+    protected Servo rightLift = null;
+
 
     void stopAndReset() {
 
@@ -227,7 +232,8 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
         leftFeeder = hardwareMap.get(CRServo.class, "left_feeder"); // PORT 0
         rightFeeder = hardwareMap.get(CRServo.class, "right_feeder"); // PORT 2
 
-
+        leftLift = hardwareMap.get(Servo.class, "LiftLeft");
+        rightLift = hardwareMap.get(Servo.class, "LiftRight");
 
         frontLeftDrive.setDirection(DcMotor.Direction.FORWARD); //validated as REVERSE
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);  //validated as FORWARD
@@ -253,9 +259,11 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
         leftFeeder.setPower(speeds.STOP_SPEED);
         rightFeeder.setPower(speeds.STOP_SPEED);
+        //leftFeeder.setPosition(0.0);
+        //rightFeeder.setPosition(0.0);
 
-        leftFeeder.setDirection(DcMotorSimple.Direction.FORWARD);
-        rightFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
+        //leftFeeder.setDirection(DcMotorSimple.Direction.FORWARD);
+        //rightFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Wait for the game to start (Display Gyro value while waiting)
         while (opModeInInit()) {
@@ -288,7 +296,7 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
             turnToHeading( speeds.TURN_SPEED,   180.0);               // Turn  CW  to 0 Degrees
             //holdHeading( speeds.TURN_SPEED,   0.0, 1.0);    // Hold  0 Deg heading for 1 second
 
-            launchThreeTimes();
+            launchArtifacts(3);
 
             turnToHeading(speeds.TURN_SPEED, 0.0);
 
@@ -564,20 +572,20 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
         telemetry.update();
     }
 
-    void launchThreeTimes() {
+    void launchArtifacts(int numberOfLaunches) {
+        launchArtifacts(numberOfLaunches, false);
+    }
+
+    void launchArtifacts(int numberOfLaunches, boolean lowerLift) {
 
         reportLaunchVelocityAndPower();
 
-        if (continuousLaunchMode) {
-
+        if (numberOfLaunches == 3) {
             tripleShot();
-
-        } else {
-
-            soloShot();
-            soloShot();
-            soloShot();
-
+        } else if (numberOfLaunches == 2) {
+            doubleShot(lowerLift);
+        } else if (numberOfLaunches == 1) {
+            singleShot(lowerLift);
         }
 
     }
@@ -593,9 +601,7 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
             reportLaunchVelocityAndPower();
         }
 
-        sleep(1000);
-
-        //intake.setPower(speeds.STOP_SPEED);
+        sleep(500);
 
         //first shot
         leftFeeder.setPower(speeds.FULL_SPEED);
@@ -608,16 +614,17 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
         reportLaunchVelocityAndPower();
         leftFeeder.setPower(speeds.STOP_SPEED);
         rightFeeder.setPower(speeds.STOP_SPEED);
+        //leftFeeder.setPosition(0.0);
+        //rightFeeder.setPosition(0.0);
 
-        //intake.setPower(speeds.FULL_SPEED);
-
-        sleep(2000);
-
-        //intake.setPower(speeds.STOP_SPEED);
+        sleep(500);
 
         //second shot
         leftFeeder.setPower(speeds.FULL_SPEED);
         rightFeeder.setPower(speeds.FULL_SPEED);
+        //leftFeeder.setPosition(180.0);
+        //rightFeeder.setPosition(180.0);
+
         feederTimer.reset();
         while (feederTimer.seconds() < speeds.FEED_TIME_SECONDS) {
             sleep(10);
@@ -625,16 +632,96 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
         reportLaunchVelocityAndPower();
         leftFeeder.setPower(speeds.STOP_SPEED);
         rightFeeder.setPower(speeds.STOP_SPEED);
+        //leftFeeder.setPosition(0.0);
+        //rightFeeder.setPosition(0.0);
 
-        //intake.setPower(speeds.FULL_SPEED);
-
-        sleep(2000);
-
-        //intake.setPower(speeds.STOP_SPEED);
+        sleep(500);
 
         //third shot
         leftFeeder.setPower(speeds.FULL_SPEED);
         rightFeeder.setPower(speeds.FULL_SPEED);
+        //leftFeeder.setPosition(180.0);
+        //rightFeeder.setPosition(180.0);
+
+
+        feederTimer.reset();
+        while (feederTimer.seconds() < speeds.FEED_TIME_SECONDS) {
+            sleep(10);
+        }
+        reportLaunchVelocityAndPower();
+        //leftFeeder.setPosition(0.0);
+        //rightFeeder.setPosition(0.0);
+        leftFeeder.setPower(speeds.STOP_SPEED);
+        rightFeeder.setPower(speeds.STOP_SPEED);
+
+        launcher.setVelocity(speeds.STOP_SPEED);
+        intake.setPower(speeds.STOP_SPEED);
+
+    }
+
+    void doubleShot(boolean lowerLift) {
+
+        intake.setPower(speeds.FULL_SPEED);
+
+        launcher.setVelocity(speeds.LAUNCHER_TARGET_VELOCITY);
+
+        while (launcher.getVelocity() < speeds.LAUNCHER_TARGET_VELOCITY) {
+            sleep(10);
+            reportLaunchVelocityAndPower();
+        }
+
+        sleep(500);
+
+        //first shot
+        leftFeeder.setPower(speeds.FULL_SPEED);
+        rightFeeder.setPower(speeds.FULL_SPEED);
+        //leftFeeder.setPosition(180.0);
+        //rightFeeder.setPosition(180.0);
+
+
+        feederTimer.reset();
+
+        while (feederTimer.seconds() < speeds.FEED_TIME_SECONDS) {
+            sleep(10);
+        }
+        reportLaunchVelocityAndPower();
+        leftFeeder.setPower(speeds.STOP_SPEED);
+        rightFeeder.setPower(speeds.STOP_SPEED);
+        //leftFeeder.setPosition(0.0);
+        //rightFeeder.setPosition(0.0);
+
+
+
+        sleep(500);
+
+        if (lowerLift) {
+            liftTimer.reset();
+            //leftLift.setPower(speeds.FULL_SPEED * -1);
+            //rightLift.setPower(speeds.FULL_SPEED * -1 );
+
+            leftLift.setPosition(5.0);
+            rightLift.setPosition(5.0);
+
+            boolean waitForLift = true;
+            while (waitForLift) {
+                sleep(10);
+                if (liftTimer.seconds() > 1.0) {
+                    //leftLift.setPower(speeds.STOP_SPEED);
+                    //rightLift.setPower(speeds.STOP_SPEED);
+                    waitForLift = false;
+                }
+            }
+
+        }
+
+        sleep(500);
+
+        //second shot
+        leftFeeder.setPower(speeds.FULL_SPEED);
+        rightFeeder.setPower(speeds.FULL_SPEED);
+        //leftFeeder.setPosition(180.0);
+        //rightFeeder.setPosition(180.0);
+
         feederTimer.reset();
         while (feederTimer.seconds() < speeds.FEED_TIME_SECONDS) {
             sleep(10);
@@ -642,11 +729,46 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
         reportLaunchVelocityAndPower();
         leftFeeder.setPower(speeds.STOP_SPEED);
         rightFeeder.setPower(speeds.STOP_SPEED);
-        sleep(3000);
+        //leftFeeder.setPosition(0.0);
+        //rightFeeder.setPosition(0.0);
 
         launcher.setVelocity(speeds.STOP_SPEED);
-        intake.setPower(speeds.STOP_SPEED);
-        //sleep(2000);
+
+    }
+
+    void singleShot(boolean lowerLift) {
+
+        intake.setPower(speeds.FULL_SPEED);
+
+        launcher.setVelocity(speeds.LAUNCHER_TARGET_VELOCITY);
+
+        while (launcher.getVelocity() < speeds.LAUNCHER_TARGET_VELOCITY) {
+            sleep(10);
+            reportLaunchVelocityAndPower();
+        }
+
+        sleep(500);
+
+        //first shot
+        leftFeeder.setPower(speeds.FULL_SPEED);
+        rightFeeder.setPower(speeds.FULL_SPEED);
+        //leftFeeder.setPosition(180.0);
+        //rightFeeder.setPosition(180.0);
+
+        feederTimer.reset();
+
+        while (feederTimer.seconds() < speeds.FEED_TIME_SECONDS) {
+            sleep(10);
+        }
+        reportLaunchVelocityAndPower();
+        leftFeeder.setPower(speeds.STOP_SPEED);
+        rightFeeder.setPower(speeds.STOP_SPEED);
+        //leftFeeder.setPosition(0.0);
+        //rightFeeder.setPosition(0.0);
+
+        launcher.setVelocity(speeds.STOP_SPEED);
+
+        sleep(500);
 
     }
 
@@ -661,6 +783,9 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
         leftFeeder.setPower(speeds.FULL_SPEED);
         rightFeeder.setPower(speeds.FULL_SPEED);
+        //leftFeeder.setPosition(180.0);
+        //rightFeeder.setPosition(180.0);
+
         feederTimer.reset();
 
         while (feederTimer.seconds() < speeds.FEED_TIME_SECONDS) {
@@ -669,6 +794,8 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
         leftFeeder.setPower(speeds.STOP_SPEED);
         rightFeeder.setPower(speeds.STOP_SPEED);
+        //leftFeeder.setPosition(0.0);
+        //rightFeeder.setPosition(0.0);
 
         launcher.setVelocity(speeds.STOP_SPEED);
 

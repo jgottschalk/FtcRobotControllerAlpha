@@ -35,6 +35,7 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -112,6 +113,9 @@ public class RobotAutoDriveByGyro_Linear_RED extends RobotAutoDriveByGyro_Linear
         leftFeeder = hardwareMap.get(CRServo.class, "left_feeder"); // PORT 0
         rightFeeder = hardwareMap.get(CRServo.class, "right_feeder"); // PORT 2
 
+        leftLift = hardwareMap.get(Servo.class, "LiftLeft");
+        rightLift = hardwareMap.get(Servo.class, "LiftRight");
+
         frontLeftDrive.setDirection(DcMotor.Direction.FORWARD); //validated as REVERSE
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);  //validated as FORWARD
         frontRightDrive.setDirection(DcMotor.Direction.REVERSE);  //validated as FORWARD
@@ -137,9 +141,17 @@ public class RobotAutoDriveByGyro_Linear_RED extends RobotAutoDriveByGyro_Linear
 
         leftFeeder.setPower(speeds.STOP_SPEED);
         rightFeeder.setPower(speeds.STOP_SPEED);
+        //leftFeeder.setPosition(0.0);
+        //rightFeeder.setPosition(0.0);
 
         leftFeeder.setDirection(DcMotorSimple.Direction.FORWARD);
         rightFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        //leftLift.setDirection(CRServo.Direction.REVERSE);
+        //rightLift.setDirection(CRServo.Direction.FORWARD);
+
+        //leftLift.setPo(speeds.STOP_SPEED);
+        //rightLift.setPower(speeds.STOP_SPEED);
 
         // Wait for the game to start (Display Gyro value while waiting)
         while (opModeInInit()) {
@@ -153,25 +165,57 @@ public class RobotAutoDriveByGyro_Linear_RED extends RobotAutoDriveByGyro_Linear
         //testMotor("3.) Back Left", moveCounts, backLeftDrive, true);
         //testMotor("4.) Back Right", moveCounts, backRightDrive, true);
 
-        //step 1.
-        driveStraight(0.15, 16.0, 0.0);
+        //step 1. position for first launch
+        driveStraight(speeds.SLOW_SPEED, 13.0, 0.0);
 
-        //step 2.
-        launchThreeTimes();
+        //step 2. shoot
+        launchArtifacts(3);
 
-        //step 3.
-        driveStraight(speeds.DEFAULT_SPEED, 18.0, 0.0);
-        turnToHeading(speeds.TURN_SPEED,  -45.0 );
-        driveStraight(speeds.DEFAULT_SPEED, 60.0, -45.0);
-        turnToHeading(  speeds.TURN_SPEED,   30.0);
+        //step 3. position for artifact pick-up
+        driveStraight(0.6, 33.0, 0.0);
 
-        driveStraight(speeds.DEFAULT_SPEED, 12.0, 30.0);
+        turnToHeading(0.3, -45.0);
 
-        turnToHeading(  speeds.TURN_SPEED,   45.0);
+        sleep(500);
 
-        driveStraight(speeds.SLOW_SPEED, 22.0, 45.0);
+        //step 4. pick-up first artifact
+        intake.setPower(speeds.FULL_SPEED);
+        driveStraight(0.4, -12.0, -45.0);
+        driveStraight(0.1, -12.0, -45.0);
 
-        sleep(10000);  // Pause to display last telemetry message.
+        sleep(1500);
+        liftTimer.reset();
+        leftLift.setPosition(5.0);
+        rightLift.setPosition(5.0);
+
+        /*
+        boolean waitForLift = true;
+        while (waitForLift) {
+            if (liftTimer.seconds() > 0.6) {
+                leftLift.setPower(speeds.STOP_SPEED);
+                rightLift.setPower(speeds.STOP_SPEED);
+                waitForLift = false;
+            }
+        }
+*/
+
+        sleep(250);
+
+        intake.setPower(speeds.STOP_SPEED);
+
+        //step 6. return to shooting position
+        turnToHeading(speeds.TURN_SPEED,  -135.0);
+        driveStraight(speeds.FULL_SPEED, 21.0, -135.0);
+        turnToHeading(speeds.TURN_SPEED,  0.0);
+
+        //step 7. launch twice
+        launchArtifacts(2, false);
+
+        //step 8. park in final location
+        turnToHeading(speeds.TURN_SPEED,   30.0);
+        driveStraight(speeds.FULL_SPEED, 12.0, 30.0);
+        turnToHeading(speeds.TURN_SPEED,   45.0);
+        driveStraight(speeds.FULL_SPEED, 22.0, 45.0);
 
     }
 

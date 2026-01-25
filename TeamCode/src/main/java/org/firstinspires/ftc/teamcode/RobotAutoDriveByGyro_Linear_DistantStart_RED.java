@@ -39,6 +39,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
 
 /*
  *  This OpMode illustrates the concept of driving an autonomous path based on Gyro (IMU) heading and encoder counts.
@@ -130,6 +131,8 @@ public class RobotAutoDriveByGyro_Linear_DistantStart_RED extends RobotAutoDrive
 
         leftFeeder.setPower(speeds.STOP_SPEED);
         rightFeeder.setPower(speeds.STOP_SPEED);
+        //leftFeeder.setPosition(0.0);
+        //rightFeeder.setPosition(0.0);
 
         leftFeeder.setDirection(DcMotorSimple.Direction.FORWARD);
         rightFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -143,22 +146,41 @@ public class RobotAutoDriveByGyro_Linear_DistantStart_RED extends RobotAutoDrive
         //1.
         driveStraight(  speeds.DEFAULT_SPEED, 63.0, 0.0);
         //2.
-        turnToHeading(  speeds.SLOW_SPEED,   -45.0);
-        holdHeading(    speeds.SLOW_SPEED,   -45.0, 0.25);
+        turnToHeading(  speeds.DEFAULT_SPEED,   -45.0);
+        holdHeading(    speeds.DEFAULT_SPEED,   -45.0, 0.25);
         //3.
         driveStraight(  speeds.DEFAULT_SPEED, 41.0, -45.0);
         //4.
-        turnToHeading(  speeds.SLOW_SPEED,   135.0);
-        holdHeading(    speeds.SLOW_SPEED,   135.0, 0.25);
+        turnToHeading(  speeds.DEFAULT_SPEED,   135.0);
+        holdHeading(    speeds.DEFAULT_SPEED,   135.0, 0.25);
         //5.
-        launchThreeTimes();
-        //6.
-        driveStraight(  speeds.FULL_SPEED, 24.0, 135.0);
-        turnToHeading(  speeds.TURN_SPEED,   170.0);
-        holdHeading(    speeds.TURN_SPEED,   170.0, 0.25);
-        driveStraight(  speeds.FULL_SPEED, 45.0, 170.0);
+        launchArtifacts(3);
 
-        sleep(10000);  // Pause to display last telemetry message.
+        //6. position for artifact pick-up
+        driveStraight(0.6, 30.0, 135.0);
+        turnToHeading(0.3, 90.0);
+
+        //7. pick-up first artifact
+        intake.setPower(speeds.FULL_SPEED);
+        driveStraight(0.5, -12.0, -90.0);
+        driveStraight(0.2, -10.0, -90.0);
+
+        //8. return to shooting position
+        turnToHeading(speeds.TURN_SPEED,  0.0);
+        driveStraight(speeds.FULL_SPEED, 21.0, 0.0);
+        turnToHeading(speeds.TURN_SPEED,  135.0);
+
+        //step 9. launch twice
+        launchArtifacts(2, false);
+        intake.setPower(speeds.STOP_SPEED);
+
+        //10.
+        turnToHeading(  speeds.TURN_SPEED,   135.0);
+        driveStraight(  speeds.FULL_SPEED, 30.0, 135.0);
+        turnToHeading(  speeds.TURN_SPEED,   -170.0);
+        holdHeading(    speeds.TURN_SPEED,   -170.0, 0.25);
+        driveStraight(  speeds.FULL_SPEED, 20.0, -170.0);
+
 
     }
 
