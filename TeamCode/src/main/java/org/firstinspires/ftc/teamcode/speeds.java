@@ -11,7 +11,7 @@ public class speeds {
     public final static double FULL_SPEED = 1.0;
 
     public final static double LAUNCHER_TARGET_VELOCITY = 1250;
-    public final static double LAUNCHER_MIN_VELOCITY = LAUNCHER_TARGET_VELOCITY - 20;
+    public final static double LAUNCHER_MIN_VELOCITY = LAUNCHER_TARGET_VELOCITY - 200;
 
     public final static double DEFAULT_SPEED = 0.7;
 
@@ -20,6 +20,6 @@ public class speeds {
     public final static double TURN_SPEED = 0.6;     // Max turn speed to limit turn rate.
 
 
-    public final static double FEED_TIME_SECONDS = 0.75; //The feeder servos run this long when a shot is requested.
+    public final static double WINDMILL_TIME_SECONDS = 2.00; //The feeder servos run this long when a shot is requested.
 
 }

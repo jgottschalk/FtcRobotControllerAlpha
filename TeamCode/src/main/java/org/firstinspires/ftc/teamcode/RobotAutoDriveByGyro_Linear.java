@@ -608,7 +608,7 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
         rightFeeder.setPower(speeds.FULL_SPEED);
         feederTimer.reset();
 
-        while (feederTimer.seconds() < speeds.FEED_TIME_SECONDS) {
+        while (feederTimer.seconds() < speeds.WINDMILL_TIME_SECONDS) {
             sleep(10);
         }
         reportLaunchVelocityAndPower();
@@ -626,7 +626,7 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
         //rightFeeder.setPosition(180.0);
 
         feederTimer.reset();
-        while (feederTimer.seconds() < speeds.FEED_TIME_SECONDS) {
+        while (feederTimer.seconds() < speeds.WINDMILL_TIME_SECONDS) {
             sleep(10);
         }
         reportLaunchVelocityAndPower();
@@ -645,7 +645,7 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
 
         feederTimer.reset();
-        while (feederTimer.seconds() < speeds.FEED_TIME_SECONDS) {
+        while (feederTimer.seconds() < speeds.WINDMILL_TIME_SECONDS) {
             sleep(10);
         }
         reportLaunchVelocityAndPower();
@@ -681,7 +681,7 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
         feederTimer.reset();
 
-        while (feederTimer.seconds() < speeds.FEED_TIME_SECONDS) {
+        while (feederTimer.seconds() < speeds.WINDMILL_TIME_SECONDS) {
             sleep(10);
         }
         reportLaunchVelocityAndPower();
@@ -723,7 +723,7 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
         //rightFeeder.setPosition(180.0);
 
         feederTimer.reset();
-        while (feederTimer.seconds() < speeds.FEED_TIME_SECONDS) {
+        while (feederTimer.seconds() < speeds.WINDMILL_TIME_SECONDS) {
             sleep(10);
         }
         reportLaunchVelocityAndPower();
@@ -757,7 +757,7 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
         feederTimer.reset();
 
-        while (feederTimer.seconds() < speeds.FEED_TIME_SECONDS) {
+        while (feederTimer.seconds() < speeds.WINDMILL_TIME_SECONDS) {
             sleep(10);
         }
         reportLaunchVelocityAndPower();
@@ -788,7 +788,7 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
         feederTimer.reset();
 
-        while (feederTimer.seconds() < speeds.FEED_TIME_SECONDS) {
+        while (feederTimer.seconds() < speeds.WINDMILL_TIME_SECONDS) {
             sleep(100);
         }
 

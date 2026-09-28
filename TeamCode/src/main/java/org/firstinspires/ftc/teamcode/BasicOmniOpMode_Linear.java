@@ -405,7 +405,7 @@ public class BasicOmniOpMode_Linear extends OpMode {
             case LAUNCHING:
                 launcherVelocityAtLaunch = launcher.getVelocity();
 
-                if (feederTimer.seconds() > speeds.FEED_TIME_SECONDS) {
+                if (feederTimer.seconds() > speeds.WINDMILL_TIME_SECONDS) {
                     launchState = LaunchState.IDLE;
                     launcher.setVelocity(speeds.STOP_SPEED);
                     leftFeeder.setPower(speeds.STOP_SPEED);

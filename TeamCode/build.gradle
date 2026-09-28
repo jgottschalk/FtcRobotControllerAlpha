@@ -23,6 +23,28 @@ android {
     }
 }
 
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.dairy.foundation/releases/'}
+    maven { url 'https://maven.brott.dev/' }
+}
+
 dependencies {
     implementation project(':FtcRobotController')
+
+    // Pedro Pathing Core
+    implementation 'com.pedropathing:revhub:3.0.0'
+    
+    // Pedro Pathing Tuning (with conflicting transitive SDK/Dashboard packages excluded)
+    implementation ('com.pedropathing:tuning:1.0.0') {
+        exclude group: 'com.acmerobotics.dashboard'
+        exclude group: 'com.qualcomm.robotcore'
+        exclude group: 'org.firstinspires.ftc'
+    }
+
+    // Modern, SDK 9/10-compatible Dashboard that does NOT call the dead Utility class
+    implementation 'com.acmerobotics.dashboard:dashboard:0.4.16'
 }
+
+
+

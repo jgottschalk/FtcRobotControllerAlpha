@@ -165,7 +165,7 @@ public class RobotAutoDriveByGyro_Linear_DistantStartWith3Shots extends RobotAut
         rightFeeder.setPower(speeds.FULL_SPEED);
         feederTimer.reset();
 
-        while (feederTimer.seconds() < speeds.FEED_TIME_SECONDS) {
+        while (feederTimer.seconds() < speeds.WINDMILL_TIME_SECONDS) {
             sleep(10);
         }
         reportLaunchVelocityAndPower();
@@ -179,7 +179,7 @@ public class RobotAutoDriveByGyro_Linear_DistantStartWith3Shots extends RobotAut
         rightFeeder.setPower(speeds.FULL_SPEED);
 
         feederTimer.reset();
-        while (feederTimer.seconds() < speeds.FEED_TIME_SECONDS) {
+        while (feederTimer.seconds() < speeds.WINDMILL_TIME_SECONDS) {
             sleep(10);
         }
         reportLaunchVelocityAndPower();
@@ -193,7 +193,7 @@ public class RobotAutoDriveByGyro_Linear_DistantStartWith3Shots extends RobotAut
         rightFeeder.setPower(speeds.FULL_SPEED);
 
         feederTimer.reset();
-        while (feederTimer.seconds() < speeds.FEED_TIME_SECONDS) {
+        while (feederTimer.seconds() < speeds.WINDMILL_TIME_SECONDS) {
             sleep(10);
         }
         reportLaunchVelocityAndPower();
