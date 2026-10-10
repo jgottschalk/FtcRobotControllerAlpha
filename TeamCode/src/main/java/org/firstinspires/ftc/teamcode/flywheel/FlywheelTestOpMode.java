@@ -1,24 +1,25 @@
 package org.firstinspires.ftc.teamcode.flywheel;
 
+import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
-
 import org.firstinspires.ftc.teamcode.speeds;
 
-@TeleOp(name="Short Circuits: Flywheel Test", group="Linear OpMode")
+@Disabled
+//@TeleOp(name="Short Circuits: Flywheel Test", group="Linear OpMode")
 public class FlywheelTestOpMode extends OpMode {
 
     private DcMotorEx launcher = null;
-
     private CRServo windMill = null;
-
     private VoltageSensor voltageSensor = null;
 
     private FlywheelOperate fwOperate = null;
+    private RevColorSensorV3 color = null;
 
     boolean lastYButtonState = false;
     boolean toggleYButtonState = false;
@@ -34,9 +35,14 @@ public class FlywheelTestOpMode extends OpMode {
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
-        fwOperate = new FlywheelOperate(launcher, voltageSensor, windMill);
+        color = hardwareMap.get(RevColorSensorV3.class, "color");
+
+
+        fwOperate = new FlywheelOperate(launcher, voltageSensor, windMill, color);
 
         fwOperate.addTelemetry(telemetry);
+        telemetry.update();
+
     }
 
     @Override
@@ -57,11 +63,13 @@ public class FlywheelTestOpMode extends OpMode {
         }
 
         if ((gamepad1.rightBumperWasReleased() || gamepad1.leftBumperWasReleased() )) {
-            fwOperate.fire();
+            //fwOperate.fire();
         }
 
         fwOperate.update();
+
         fwOperate.addTelemetry(telemetry);
+        telemetry.update();
 
     }
 

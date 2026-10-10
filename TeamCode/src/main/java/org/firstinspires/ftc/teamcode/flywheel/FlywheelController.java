@@ -114,8 +114,6 @@ public class FlywheelController {
         }
     }
 
-    // ---------------- Queries ----------------
-
     /**
      * Highest RPM we allow at the present battery voltage while keeping headroom volts in reserve
      * for recovery after a ball loads the wheel.

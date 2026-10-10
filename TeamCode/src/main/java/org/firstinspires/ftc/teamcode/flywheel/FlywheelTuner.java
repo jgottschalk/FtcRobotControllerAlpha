@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.flywheel;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -12,15 +13,16 @@ import org.firstinspires.ftc.teamcode.speeds;
 
 /**
  * How to tune:
- *   1. Run the sweep with X button (A). Outcome set kS and kV.
- *   2. Spin up with SQUARE button (X). Outcome - tune kP with Left/Right stick until the wheel settles quickly without oscillating
- *   3. Launch a ball with TRIANGLE button (Y). Outcome - If "saturated during recovery" is > 0 ms, the
- *      controller ran out of voltage: raise EMF headroom (lowers max target) with d-pad
- *      up/down or lower target RPM.
- *   4. Run noise measurement - Spin up with SQUARE button (X), then measure with CIRCLE button (B). Outcome - tolerance must be
- *      comfortably above 3*sigma or the ready flag will flicker; make it as small as you
- *      can tolerate for shot consistency. Use d-pad left and d-pad right to adjust towards
- *      recommended tolerance.
+ *   1. Run the sweep with X button (A). Outcome - set kS and kV.
+ *   2. Spin up with SQUARE button (X). Outcome - tune kP with Left/Right stick,
+ *      until the wheel settles quickly without oscillating
+ *   3. SQUARE, then Launch a ball with TRIANGLE button (Y). Outcome - If "saturated during recovery"
+ *      is > 0 ms, the controller ran out of voltage: raise EMF headroom (lowers max target)
+ *      with d-pad up/down (lowering target RPM is also an option but creates accuracy risk).
+ *   4. Run noise measurement - Spin up with SQUARE button (X); measure with CIRCLE button (B).
+ *      Outcome - tolerance must be comfortably above 3*sigma or the ready flag will flicker;
+ *      make it as small as you can tolerate for shot consistency. Use d-pad left and d-pad right
+ *      to adjust towards recommended tolerance.
  *
  *  *   A                   Run kS/kV sweep (flywheel spins freely; keep balls and feeder clear!)
  *  *   X                   Toggle closed-loop spin at target RPM
@@ -34,7 +36,8 @@ import org.firstinspires.ftc.teamcode.speeds;
  *  *   share               Save all parameters (loaded by FlywheelOperate)
  *
  */
-@TeleOp(name = "Flywheel Tuner", group = "Linear OpMode")
+//@TeleOp(name = "Flywheel Tuner", group = "Linear OpMode")
+@Disabled
 public class FlywheelTuner extends LinearOpMode {
 
     // Sweep settings
@@ -82,7 +85,8 @@ public class FlywheelTuner extends LinearOpMode {
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
-        params = FlywheelParams.load();
+        params = new FlywheelParams(); //FlywheelParams.load();
+
         fw = new FlywheelController(launcher, voltageSensor, params);
 
         boolean prevA = false, prevB = false, prevX = false, prevY = false;
@@ -92,10 +96,11 @@ public class FlywheelTuner extends LinearOpMode {
 
         telemetry.addLine("Flywheel Tuner ready. Press START.");
         telemetry.update();
+
         waitForStart();
 
         while (opModeIsActive()) {
-            // ---- Inputs (edge-triggered) ----
+
             if (edge(gamepad1.left_bumper, prevLB)) params.targetRpm = Math.max(0, params.targetRpm - 100);
             if (edge(gamepad1.right_bumper, prevRB)) params.targetRpm += 100;
             if (edge(gamepad1.dpad_up, prevUp))
@@ -116,7 +121,7 @@ public class FlywheelTuner extends LinearOpMode {
                 shotCapturing = false;
                 status = "Shot armed - fire a ball";
             }
-            if (edge(gamepad1.share, prevBack)) {
+            if (gamepad1.options) {
                 params.save();
                 status = "Saved parameters";
                 paramSave = true;
@@ -129,6 +134,7 @@ public class FlywheelTuner extends LinearOpMode {
                 telemetry.addData("readyDwellMs", params.readyDwellMs);
                 telemetry.addData("velFilterAlpha", params.velFilterAlpha);
                 telemetry.addData("targetRpm", params.targetRpm);
+                telemetry.update();
             }
 
             boolean doSweep = edge(gamepad1.a, prevA);
@@ -150,7 +156,7 @@ public class FlywheelTuner extends LinearOpMode {
             updateShotCapture();
 
             if (paramSave) {
-                paramSave = false;
+                //no-op
             } else {
                 showTelemetry();
             }
@@ -256,7 +262,6 @@ public class FlywheelTuner extends LinearOpMode {
             shotMinRpm = Math.min(shotMinRpm, fw.getRpm());
             boolean recovered = fw.isReady();
             boolean timedOut = shotTimer.milliseconds() > SHOT_TIMEOUT_MS;
-            windMill.setPower(0.5);
             if (recovered || timedOut) {
                 lastDroop = fw.getEffectiveTargetRpm() - shotMinRpm;
                 lastRecoveryMs = timedOut ? Double.NaN : shotTimer.milliseconds();
@@ -264,40 +269,45 @@ public class FlywheelTuner extends LinearOpMode {
                 shotCapturing = false;
                 shotArmed = false;
                 status = timedOut ? "Shot capture timed out (never re-entered window)"
-                                  : "Shot captured";
+                        : "Shot captured";
             }
+        }
+
+        // Run the feeder servo if armed or actively capturing; stop once done
+        if (shotArmed || shotCapturing) {
+            windMill.setPower(0.5);
         } else {
             windMill.setPower(0.0);
         }
     }
 
-    // ------------------------------------------------------------------------------------
     private void showTelemetry() {
         double suggestedTol = Double.isNaN(noiseSigma) ? Double.NaN
                 : Math.ceil(Math.max(3 * noiseSigma, 0.02 * params.targetRpm) / 5.0) * 5.0;
 
-        telemetry.addData("Status", status);
-        telemetry.addData("Battery (V)", "%.2f", fw.getBatteryVolts());
-        telemetry.addData("Target / Effective RPM", "%.0f / %.0f",
-                fw.getTargetRpm(), fw.getEffectiveTargetRpm());
-        telemetry.addData("RPM", "%.0f", fw.getRpm());
-        telemetry.addData("Command (V)", "%.2f%s", fw.getCommandedVolts(), fw.isSaturated() ? "  SATURATED" : "");
-        telemetry.addData("Ready", fw.isReady());
-        telemetry.addData("kS (V)", "%.3f", params.kS);
-        telemetry.addData("kV (V/RPM)", "%.5f", params.kV);
-        telemetry.addData("kP (V/RPM)", "%.4f", params.kP);
+        telemetry.addData("[GENERAL] Status", status);
+        telemetry.addData("[GENERAL] Ready", fw.isReady());
+
+        telemetry.addData("[RPM] Current RPM", "%.0f", fw.getRpm());
+        telemetry.addData("[RPM] Target / Effective RPM", "%.0f / %.0f", fw.getTargetRpm(), fw.getEffectiveTargetRpm());
+        telemetry.addData("[RPM] Max target @ this battery", "%.0f RPM%s", fw.maxTargetRpm(), fw.isCappedByHeadroom() ? "  (TARGET CAPPED)" : "");
+
+        telemetry.addData("[VOLT] Battery", "%.2f", fw.getBatteryVolts());
+        telemetry.addData("[VOLT] Command", "%.2f%s", fw.getCommandedVolts(), fw.isSaturated() ? "  SATURATED" : "");
+        telemetry.addData("[VOLT] kS", "%.3f", params.kS);
+
+        telemetry.addData("[VOLT/RPM] kV", "%.5f", params.kV);
+        telemetry.addData("[VOLT/RPM] kP", "%.4f", params.kP);
+
         telemetry.addData("Back-EMF headroom", "%.0f%%", params.backEmfHeadroom * 100);
-        telemetry.addData("Max target @ this battery", "%.0f RPM%s", fw.maxTargetRpm(),
-                fw.isCappedByHeadroom() ? "  (TARGET CAPPED)" : "");
-        telemetry.addData("Ready tolerance", "+/- %.0f RPM for %.0f ms",
-                params.toleranceRpm, params.readyDwellMs);
+        telemetry.addData("Ready tolerance", "+/- %.0f RPM for %.0f ms", params.toleranceRpm, params.readyDwellMs);
         telemetry.addData("Noise sigma", Double.isNaN(noiseSigma) ? "n/a" : String.format("%.1f RPM", noiseSigma));
-        telemetry.addData("Suggested tolerance", Double.isNaN(suggestedTol) ? "n/a"
-                : String.format("%.0f RPM (max of 3*sigma, 2%% of target)", suggestedTol));
+        telemetry.addData("Suggested tolerance", Double.isNaN(suggestedTol) ? "n/a" : String.format("%.0f RPM (max of 3*sigma, 2%% of target)", suggestedTol));
         telemetry.addData("Last shot droop", Double.isNaN(lastDroop) ? "n/a" : String.format("%.0f RPM", lastDroop));
+
         telemetry.addData("Last recovery time", Double.isNaN(lastRecoveryMs) ? "n/a" : String.format("%.0f ms", lastRecoveryMs));
-        telemetry.addData("Saturated during recovery", Double.isNaN(lastSaturatedMs) ? "n/a"
-                : String.format("%.0f ms%s", lastSaturatedMs, lastSaturatedMs > 0 ? "  -> raise headroom" : ""));
+        telemetry.addData("Saturated during recovery", Double.isNaN(lastSaturatedMs) ? "n/a" : String.format("%.0f ms%s", lastSaturatedMs, lastSaturatedMs > 0 ? "  -> raise headroom" : ""));
+
         telemetry.update();
     }
 

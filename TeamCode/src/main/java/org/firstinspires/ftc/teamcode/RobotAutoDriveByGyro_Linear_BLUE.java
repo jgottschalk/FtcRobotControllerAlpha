@@ -33,6 +33,7 @@ import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -89,8 +90,8 @@ import com.qualcomm.robotcore.hardware.Servo;
  *  Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name="CLOSE Start - BLUE", group="Robot")
-//@Disabled
+//@Autonomous(name="CLOSE Start - BLUE", group="Robot")
+@Disabled
 public class RobotAutoDriveByGyro_Linear_BLUE extends RobotAutoDriveByGyro_Linear {
 
     @Override

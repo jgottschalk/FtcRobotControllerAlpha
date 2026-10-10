@@ -31,6 +31,7 @@ package org.firstinspires.ftc.teamcode;
 
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -76,8 +77,8 @@ import java.util.concurrent.TimeUnit;
  *
 */
 
-@TeleOp(name="Short Circuits: Omni Linear OpMode", group="Linear OpMode")
-//@Disabled
+//@TeleOp(name="Short Circuits: Omni Linear OpMode", group="Linear OpMode")
+@Disabled
 public class BasicOmniOpMode_Linear extends OpMode {
 
     /*

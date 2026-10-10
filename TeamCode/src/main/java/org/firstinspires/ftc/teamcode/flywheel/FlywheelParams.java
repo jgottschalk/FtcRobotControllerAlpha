@@ -27,11 +27,11 @@ public class FlywheelParams {
 
     // ---- Feedforward / feedback (volts) ----
     /** Static friction voltage (intercept of volts vs. RPM). */
-    public double kS = 0.40;
+    public double kS = 0.473;
     /** Back-EMF constant: volts per RPM at steady state (slope of volts vs. RPM). */
-    public double kV = 0.0019;
+    public double kV = 0.00204;
     /** Proportional gain: volts per RPM of error. */
-    public double kP = 0.004;
+    public double kP = 0.012;
 
     // ---- The two key tuned parameters ----
     /**
@@ -40,7 +40,7 @@ public class FlywheelParams {
      */
     public double backEmfHeadroom = 0.15;
     /** Flywheel is "ready" when |target - rpm| <= toleranceRpm ... */
-    public double toleranceRpm = 75.0;
+    public double toleranceRpm = 55.0;
     /** ... continuously for this long. */
     public double readyDwellMs = 30.0;
 
@@ -49,10 +49,12 @@ public class FlywheelParams {
     public double velFilterAlpha = 0.40;
     public double targetRpm = 2680.0;
 
+
     private static File file() {
         return AppUtil.getInstance().getSettingsFile(FILE_NAME);
     }
 
+/*
     public static FlywheelParams load() {
         FlywheelParams p = new FlywheelParams();
         File f = file();
@@ -74,6 +76,7 @@ public class FlywheelParams {
         }
         return p;
     }
+*/
 
     public void save() {
         try {
@@ -94,6 +97,7 @@ public class FlywheelParams {
             throw new RuntimeException("Failed to save flywheel params", e);
         }
     }
+
 
     private static double get(Properties props, String key, double def) {
         String s = props.getProperty(key);
