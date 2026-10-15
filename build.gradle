@@ -9,10 +9,6 @@ buildscript {
         mavenCentral()
         google()
     }
-    dependencies {
-        // Note for FTC Teams: Do not modify this yourself.
-        classpath 'com.android.tools.build:gradle:8.12.3'
-    }
 }
 
 plugins {
@@ -26,12 +22,10 @@ plugins {
 allprojects {
     repositories {
         mavenCentral()
-        maven { url = 'https://jitpack.io' }
         google()
     }
 }
 
 repositories {
     mavenCentral()
-    maven { url = '[https://maven.brott.dev/](https://maven.brott.dev/)' }
 }
