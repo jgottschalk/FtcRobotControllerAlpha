@@ -100,6 +100,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 @Disabled
 public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
+    public final static double ENHANCED_SPEED = 0.8;
+
     /* Declare OpMode members. */
     protected DcMotor frontLeftDrive = null;
     protected DcMotor backLeftDrive = null;
@@ -283,16 +285,16 @@ public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
     protected void pTestCase () {
 
-            driveStraight(speeds.ENHANCED_SPEED, 24.0, 0.0);    // Drive 24
+            driveStraight(ENHANCED_SPEED, 24.0, 0.0);    // Drive 24
 
             turnToHeading(speeds.TURN_SPEED, -45.0);               // Turn  CW to -45 Degrees
             //holdHeading(speeds.TURN_SPEED, -45.0, 0.5);   // Hold -45 Deg heading for a 1/2 second
 
-            driveStraight(speeds.ENHANCED_SPEED, 17.0, -45.0);  // Drive Forward 17" at -45 degrees (12"x and 12"y)
+            driveStraight(ENHANCED_SPEED, 17.0, -45.0);  // Drive Forward 17" at -45 degrees (12"x and 12"y)
             turnToHeading(speeds.TURN_SPEED,  45.0);               // Turn  CCW  to  45 Degrees
             //holdHeading( speeds.TURN_SPEED,  45.0, 0.5);    // Hold  45 Deg heading for a 1/2 second
 
-            driveStraight(speeds.ENHANCED_SPEED, 17.0, 45.0);  // Drive Forward 17" at 45 degrees (-12"x and 12"y)
+            driveStraight(ENHANCED_SPEED, 17.0, 45.0);  // Drive Forward 17" at 45 degrees (-12"x and 12"y)
             turnToHeading( speeds.TURN_SPEED,   180.0);               // Turn  CW  to 0 Degrees
             //holdHeading( speeds.TURN_SPEED,   0.0, 1.0);    // Hold  0 Deg heading for 1 second
 

@@ -7,8 +7,10 @@ public class SC2627_TeleOp_Red_SecondPref extends SC2627Base {
 
     @Override
     public void runOpMode() {
-        super.initRobot(GoToPositionController.START_POS.RED, true);
+        super.initRobot(GoToPositionController.START_POS.RED, false);
         waitForStart();
+        activateIntakeMode();
+        super.runOpMode();
     }
 
 }

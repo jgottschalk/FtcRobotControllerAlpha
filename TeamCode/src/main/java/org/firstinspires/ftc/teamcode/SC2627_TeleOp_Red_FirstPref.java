@@ -9,6 +9,8 @@ public class SC2627_TeleOp_Red_FirstPref extends SC2627Base {
     public void runOpMode() {
         super.initRobot(GoToPositionController.START_POS.RED, true);
         waitForStart();
+        activateIntakeMode();
+        super.runOpMode();
     }
 
 }

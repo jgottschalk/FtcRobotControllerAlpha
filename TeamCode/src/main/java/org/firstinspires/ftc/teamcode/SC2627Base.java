@@ -13,7 +13,6 @@ import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.flywheel.FlywheelOperate;
 
 /*
@@ -21,10 +20,6 @@ import org.firstinspires.ftc.teamcode.flywheel.FlywheelOperate;
  * 1) Axial:    Driving forward and backward               Left-joystick Forward/Backward
  * 2) Lateral:  Strafing right and left                     Left-joystick Right and Left
  * 3) Yaw:      Rotating Clockwise and counter clockwise    Right-joystick Right and Left
- *
- * This code is written assuming that the right-side motors need to be reversed for the robot to drive forward.
- * When you first test your robot, if it moves backward when you push the left stick forward, then you must flip
- * the direction of all 4 motors (see code below).
  *
  * gamepad X: SQUARE BUTTON
  * gamepad A: X BUTTON
@@ -36,63 +31,56 @@ import org.firstinspires.ftc.teamcode.flywheel.FlywheelOperate;
 //@Disabled
 public class SC2627Base extends LinearOpMode {
 
-    private enum xTakeMode {
+    protected enum xTakeMode {
         INTAKE,
         POSITIONING,
         OUTTAKE
     }
 
-    private enum DriveMode {
+    protected enum DriveMode {
         MANUAL,
         AUTO_ASSIST
     }
 
     //timers
-    private final ElapsedTime m_windmillManualTimer = new ElapsedTime();
-    private final ElapsedTime m_runtime = new ElapsedTime();
+    protected final ElapsedTime m_runtime = new ElapsedTime();
     double lastCycleEndTime = 0.0;
 
     //power draws
-    private DcMotor frontLeftDrive = null;
-    private DcMotor backLeftDrive = null;
-    private DcMotor frontRightDrive = null;
-    private DcMotor backRightDrive = null;
-    private DcMotorEx launcher = null;
-    private DcMotorEx intake = null;
-    private CRServo leftFeeder = null;
-    private CRServo rightFeeder = null;
-    private CRServo windMill = null;
-    private RevColorSensorV3 color = null;
-    private VoltageSensor voltageSensor = null;
-    private GoBildaPinpointDriver pinpoint = null;
+    protected DcMotor frontLeftDrive = null;
+    protected DcMotor backLeftDrive = null;
+    protected DcMotor frontRightDrive = null;
+    protected DcMotor backRightDrive = null;
+    protected DcMotorEx launcher = null;
+    protected DcMotorEx intake = null;
+    protected CRServo leftFeeder = null;
+    protected CRServo rightFeeder = null;
+    protected CRServo windMill = null;
+    protected RevColorSensorV3 color = null;
+    protected VoltageSensor voltageSensor = null;
+    protected GoBildaPinpointDriver pinpoint = null;
 
     //controllers
     protected FlywheelOperate fwOperate = null;
     protected GoToPositionController positionController = null;
 
     //modes
-    private DriveMode m_driveMode = DriveMode.MANUAL;
-    private xTakeMode m_xTakeMode = xTakeMode.INTAKE;
-    private boolean m_testMode = false;
-    private boolean m_windMillManualMode =false;
+    protected DriveMode m_driveMode = DriveMode.MANUAL;
+    protected xTakeMode m_xTakeMode = xTakeMode.INTAKE;
 
     //buttons
     boolean lastYButtonState = false;
     boolean lastAButtonState = false;
+    boolean lastBButtonState = false;
     boolean lastShareButtonState = false;
-    boolean lastUpButtonState = false;
-    boolean lastDownButtonState = false;
 
-    //positions (default to blue)
     GoToPositionController.START_POS startPos = null;
-
-    //File soundFile;
 
     public void initRobot(GoToPositionController.START_POS ps, boolean firstPreference) {
 
         startPos = ps;
 
-        m_xTakeMode = xTakeMode.INTAKE;
+        m_xTakeMode = xTakeMode.POSITIONING;
 
         frontLeftDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
         backLeftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
@@ -113,16 +101,6 @@ public class SC2627Base extends LinearOpMode {
 
         fwOperate = new FlywheelOperate(launcher, voltageSensor, windMill, color);
 
-        // ########################################################################################
-        // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
-        // ########################################################################################
-        // Most robots need the motors on one side to be reversed to drive forward.
-        // The motor reversals shown here are for a "direct drive" robot (the wheels turn the same direction as the motor shaft)
-        // If your robot has additional gear reductions or uses a right-angled drive, it's important to ensure
-        // that your motors are turning in the correct direction.  So, start out with the reversals here, BUT
-        // when you first test your robot, push the left joystick forward and observe the direction the wheels turn.
-        // Reverse the direction (flip FORWARD <-> REVERSE ) of any wheel that runs backward
-        // Keep testing until ALL the wheels move the robot forward when you push the left joystick forward.
         frontLeftDrive.setDirection(DcMotor.Direction.FORWARD);
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -134,9 +112,6 @@ public class SC2627Base extends LinearOpMode {
         frontRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        //launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        //launcher.setZeroPowerBehavior(BRAKE);
-        //launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
         launcher.setDirection(DcMotorSimple.Direction.REVERSE);
 
         leftFeeder.setPower(speeds.STOP_SPEED);
@@ -148,8 +123,6 @@ public class SC2627Base extends LinearOpMode {
         leftFeeder.setDirection(CRServo.Direction.FORWARD);
         rightFeeder.setDirection(CRServo.Direction.REVERSE);
 
-        activateIntakeMode();
-
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
 
         positionController = new GoToPositionController(frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive, pinpoint, telemetry, startPos, firstPreference);
@@ -157,11 +130,13 @@ public class SC2627Base extends LinearOpMode {
         // TeleOp continues from where autonomous left the robot, if autonomous saved a pose recently.
         // Autonomous always starts from the start position.
         boolean isAutonomous = getClass().isAnnotationPresent(Autonomous.class);
-        if (!isAutonomous && PoseStorage.isFresh()) {
+        if (!isAutonomous && PoseStorage.hasPose()) {
             positionController.setPose(PoseStorage.getX(), PoseStorage.getY(), PoseStorage.getHeading());
-            PoseStorage.clear();
+            // Show what the Pinpoint itself now reports, not just what was saved
+            positionController.odometry();
             telemetry.addData("Start pose", "from autonomous (%.1f, %.1f, %.1f deg)",
-                    PoseStorage.getX(), PoseStorage.getY(), Math.toDegrees(PoseStorage.getHeading()));
+                    positionController.getX(), positionController.getY(),
+                    Math.toDegrees(positionController.getHeading()));
         } else {
             telemetry.addLine("Start pose: start position");
         }
@@ -197,7 +172,7 @@ public class SC2627Base extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        //default to blue for testin purposes
+        //default to blue for testing purposes
         initRobot(GoToPositionController.START_POS.BLUE, true);
         waitForStart();
 
@@ -266,72 +241,13 @@ public class SC2627Base extends LinearOpMode {
                 backRightPower /= max;
             }
 
-            //if (gamepad1.share) {
-            //m_testMode = !m_testMode;
-            //}
+            modulateIntake();
 
-            boolean currentShareButtonState = gamepad1.share;
-            if (currentShareButtonState && !lastShareButtonState) {
-                intake.setPower(0.0);
-                if (intake.getDirection() == CRServo.Direction.FORWARD) {
-                    intake.setDirection(CRServo.Direction.REVERSE);
-                } else {
-                    intake.setDirection(CRServo.Direction.FORWARD);
-                }
-                intake.setPower(speeds.FULL_SPEED);
-                telemetry.addLine("intake reversed");
-            }
-            lastShareButtonState = currentShareButtonState;
+            boolean launchNow = (gamepad1.rightBumperWasReleased() || gamepad1.leftBumperWasReleased());
 
-            boolean currentUpButtonState = gamepad1.dpad_up;
-            if (currentUpButtonState && !lastUpButtonState) {
-                positionController.setGoalPosition(GoToPositionController.GOAL_POS.NEAR);
-            }
-            lastUpButtonState = currentUpButtonState;
-
-            boolean currentDownButtonState = gamepad1.dpad_down;
-            if (currentDownButtonState && !lastDownButtonState) {
-                positionController.setGoalPosition(GoToPositionController.GOAL_POS.FAR);
-            }
-            lastDownButtonState = currentDownButtonState;
-
-            if (m_windMillManualMode) {
-                telemetry.addData("manual color state",
-                        "red: " + color.red() +
-                                ", green: " + color.green() +
-                                ", blue: " + color.blue() +
-                                ", alpha: " + color.alpha() +
-                                ", distance: " + color.getDistance(DistanceUnit.CM));
-            }
-
-            // windmill test mode
-            if (gamepad1.bWasPressed()) { //circle button
-                if (!m_windMillManualMode) {
-                    windMill.setPower(0.1);
-                    launcher.setPower(0);
-                    intake.setPower(0);
-                    m_windMillManualMode = true;
-                    m_windmillManualTimer.reset();
-                } else {
-                    windMill.setPower(0.0);
-                    m_windMillManualMode = false;
-                }
-            }
-
-            if (m_windMillManualMode && (m_windmillManualTimer.seconds() > 10.0)) {
-                windMill.setPower(speeds.STOP_SPEED);
-                m_windMillManualMode = false;
-            }
-
-
-            if (((gamepad1.rightBumperWasReleased() || gamepad1.leftBumperWasReleased())
-                    && (m_xTakeMode == xTakeMode.OUTTAKE))
-            ) {
-
+            if (launchNow && (m_xTakeMode == xTakeMode.OUTTAKE)) {
                 fwOperate.launch();
-
-            } else if ((gamepad1.rightBumperWasReleased() || gamepad1.leftBumperWasReleased())
-                    && (m_xTakeMode == xTakeMode.INTAKE)) {
+            } else if (launchNow && (m_xTakeMode == xTakeMode.INTAKE || m_xTakeMode == xTakeMode.POSITIONING)) {
                 gamepad1.rumbleBlips(3);
             }
 
@@ -350,8 +266,6 @@ public class SC2627Base extends LinearOpMode {
                     boolean destinationReached = positionController.autoAssistDrive();
 
                     if (destinationReached) {
-                        // Don't block here: the flywheel and the rest of the loop must keep running.
-                        // Current vs. target pose stays visible via addTelemetry() every loop.
                         positionController.stopMotors();
                         gamepad1.rumbleBlips(1);
                         m_driveMode = DriveMode.MANUAL;
@@ -363,22 +277,33 @@ public class SC2627Base extends LinearOpMode {
                     break;
 
                 case MANUAL:
+
                     boolean currentAButtonState = gamepad1.a;
-                    if (currentAButtonState && !lastAButtonState) {
-                        positionController.goScore();
+                    boolean currentBButtonState = gamepad1.b;
+
+                    if ((currentAButtonState && !lastAButtonState)
+                    || (currentBButtonState && !lastBButtonState)) {
+
+                        GoToPositionController.GOAL_POS position;
+                        if (currentAButtonState && !lastAButtonState) {
+                            position = GoToPositionController.GOAL_POS.NEAR;
+                        } else {
+                            position = GoToPositionController.GOAL_POS.FAR;
+                        }
+
+                        positionController.goScore(position);
                         m_driveMode = DriveMode.AUTO_ASSIST;
                     }
+
                     lastAButtonState = currentAButtonState;
+                    lastBButtonState = currentBButtonState;
 
                     if (m_driveMode == DriveMode.MANUAL) {
-                        if (m_testMode) {
-                            operateManualTests();
-                        } else {
+
                             frontLeftDrive.setPower(frontLeftPower * speeds.DEFAULT_SPEED);
                             frontRightDrive.setPower(frontRightPower * speeds.DEFAULT_SPEED);
                             backLeftDrive.setPower(backLeftPower * speeds.DEFAULT_SPEED);
                             backRightDrive.setPower(backRightPower * speeds.DEFAULT_SPEED);
-                        }
                     }
                     break;
             }
@@ -391,7 +316,6 @@ public class SC2627Base extends LinearOpMode {
 
             //telemetry.addData("launcher velocity", "%4.2f", launcherSpeed);
             //telemetry.addData("status", "Run Time: " + runtime.toString());
-            //telemetry.addData("drive power", powerCoefficient);
             //telemetry.addData("windmill power at launch", windmillPowerAtLaunch);
             //telemetry.addData("launcher velocity at launch", launcherVelocityAtLaunch);
             //telemetry.addData("intake velocity", "%4.2f", intake.getVelocity());
@@ -406,23 +330,21 @@ public class SC2627Base extends LinearOpMode {
         }
     }
 
-    private void operateManualTests() {
-
-        frontLeftDrive.setPower(gamepad1.x ? 1.0 : 0.0);  // SQUARE
-        backLeftDrive.setPower(gamepad1.a ? 1.0 : 0.0);  // X
-        frontRightDrive.setPower(gamepad1.y ? 1.0 : 0.0);  // TRIANGLE
-        backRightDrive.setPower(gamepad1.b ? 1.0 : 0.0);  // CIRCLE
-
-        if (gamepad1.dpad_up) {
-            telemetry.addLine("feeder test");
-            if (leftFeeder.getPower() > 0) {
-                leftFeeder.setPower(-1.0);
-                rightFeeder.setPower(-1.0);
+    protected void modulateIntake() {
+        boolean currentShareButtonState = gamepad1.share;
+        if (currentShareButtonState && !lastShareButtonState) {
+            intake.setPower(0.0);
+            if (intake.getDirection() == CRServo.Direction.FORWARD) {
+                intake.setDirection(CRServo.Direction.REVERSE);
             } else {
-                leftFeeder.setPower(1.0);
-                rightFeeder.setPower(1.0);
+                intake.setDirection(CRServo.Direction.FORWARD);
             }
+            intake.setPower(speeds.FULL_SPEED);
+            telemetry.addLine("intake reversed");
         }
+        lastShareButtonState = currentShareButtonState;
     }
 
 }
+
+
