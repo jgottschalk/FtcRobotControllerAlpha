@@ -40,7 +40,9 @@ public class FlywheelController {
 
         //this is crucial
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        // Brake at zero power so the flywheel stops quickly when spinning is turned off.
+        // While spinning, the controller always commands some power, so this doesn't affect speed control.
+        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         voltageSensor = vs;
         targetRpm = params.targetRpm;

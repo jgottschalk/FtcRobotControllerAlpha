@@ -7,44 +7,37 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @Autonomous(name="SC2627 Auto Blue First Preference", group="Robot")
 public class SC2627_Auto_Blue_FirstPref extends SC2627Base {
 
-    //move out from wall
-    static class FIRST_POSITION {
-        public final static double x = 9;
-        public final static double y = 64;
-        public final static double heading = Math.PI / 4;
-    }
-
     //angle position
     static class SECOND_POSITION {
-        public final static double x = 59;
+        public final static double x = 58;
         public final static double y = 27; //72 - 24 -12 - 9
         public final static double heading = Math.PI / 2;
     }
 
     //rammed position: robot center where its front touches the north wall (72 - 9)
     static class THIRD_POSITION {
-        public final static double x = 59;
+        public final static double x = 58;
         public final static double y = 72 - 9;
         public final static double heading = Math.PI / 2;
     }
 
     //back-up position: back from the wall, so the second ram has a run-up
     static class FOURTH_POSITION {
-        public final static double x = 59;
+        public final static double x = 58;
         public final static double y = 27.0;
         public final static double heading = Math.PI / 2;
     }
 
     static class FIFTH_POSITION {
-        public final static double x = 56;
+        public final static double x = 50;
         public final static double y = 72 - 48 - 9;
         public final static double heading = Math.PI / 2;
     }
 
     //park
     static class END_POSITION {
-        public final static double x = 53;
-        public final static double y = -30;
+        public final static double x = 54;
+        public final static double y = -26;
         public final static double heading = Math.PI;
     }
 
@@ -54,81 +47,87 @@ public class SC2627_Auto_Blue_FirstPref extends SC2627Base {
     private final ElapsedTime stepTimer = new ElapsedTime();
 
     // The routine is written in blue coordinates. The red auto overrides isRed() to return true,
-    // and every target is mirrored across x = 0: x -> -x, y unchanged, heading -> PI - heading.
+    // and every target moves to the opposite side of the field: north <-> south, east <-> west,
+    // and the robot faces the opposite way (x -> -x, y -> -y, heading -> heading + PI).
     protected boolean isRed() { return false; }
 
     protected double mx(double blueX) { return isRed() ? -blueX : blueX; }
 
-    protected double mh(double blueHeading) { return isRed() ? Math.PI - blueHeading : blueHeading; }
+    protected double my(double blueY) { return isRed() ? -blueY : blueY; }
+
+    protected double mh(double blueHeading) { return isRed() ? blueHeading + Math.PI : blueHeading; }
 
     @Override
     public void runOpMode() {
 
         super.initRobot(isRed() ? GoToPositionController.START_POS.RED : GoToPositionController.START_POS.BLUE, true);
         waitForStart();
+        startSegmentTiming();
 
-        //0. launch artifacts for points
+        //1. start position, launch artifacts for points
         shoot();
-
-        //1. go south away from wall to make travel easier
-        /*
-        super.positionController.setTargetPositionAndPath(
-                mx(FIRST_POSITION.x),
-                FIRST_POSITION.y,
-                mh(FIRST_POSITION.heading));
-        go();
-        */
+        endSegment("1. launch");
 
         //2. go position with intake point north; have sufficient distance for ramming speed
-        super.positionController.setTargetPositionAndPath(
+        super.positionController.setTargetAndPlanPath(
                 mx(SECOND_POSITION.x),
-                SECOND_POSITION.y,
+                my(SECOND_POSITION.y),
                 mh(SECOND_POSITION.heading));
         go();
+        endSegment("2. to run-up");
 
         //3. ram into north wall
         activateIntakeMode();
         super.positionController.setDriveThroughTarget(
                 mx(THIRD_POSITION.x),
-                THIRD_POSITION.y,
+                my(THIRD_POSITION.y),
                 mh(THIRD_POSITION.heading),
                 0.7);
         go();
+        intakeInPlace(2.0);
+        endSegment("3. ram + intake");
 
         //4. back-up a bit
-        super.positionController.setTargetPositionAndPath(
+        super.positionController.setTargetAndPlanPath(
                 mx(FOURTH_POSITION.x),
-                FOURTH_POSITION.y,
+                my(FOURTH_POSITION.y),
                 mh(FOURTH_POSITION.heading));
         go();
+        endSegment("4. back up");
 
-        //5. intake again
+        //5. intake a second, final time
         super.positionController.setDriveThroughTarget(
                 mx(THIRD_POSITION.x),
-                THIRD_POSITION.y,
+                my(THIRD_POSITION.y),
                 mh(THIRD_POSITION.heading),
                 0.7);
         go();
+        intakeInPlace(1.0);
         deactivateIntakeMode();
+        endSegment("5. ram + intake");
 
         //6. avoid the flower
-        super.positionController.setTargetPositionAndPath(
+        super.positionController.setTargetAndPlanPath(
                 mx(FIFTH_POSITION.x),
-                FIFTH_POSITION.y,
+                my(FIFTH_POSITION.y),
                 mh(FIFTH_POSITION.heading));
         go();
+        endSegment("6. avoid the flower");
 
         //7. go to end position, park
-        super.positionController.setTargetPositionAndPath(
+        super.positionController.setTargetAndPlanPath(
                 mx(END_POSITION.x),
-                END_POSITION.y,
+                my(END_POSITION.y),
                 mh(END_POSITION.heading));
         go();
+        endSegment("7. park");
 
-        // Keep the saved pose fresh until autonomous ends, so TeleOp gets it even if the routine finished early
+        // Keep the saved pose fresh until autonomous ends, so TeleOp gets it even if the routine finished early.
+        // The segment times stay on the Driver Station screen.
         while (opModeIsActive()) {
             updatePose();
             fwOperate.update();
+            addSegmentTelemetry();
             telemetry.update();
         }
 
@@ -181,6 +180,19 @@ public class SC2627_Auto_Blue_FirstPref extends SC2627Base {
             telemetry.update();
         }
         positionController.stopMotors();
+    }
+
+    protected void intakeInPlace(double seconds) {
+
+        positionController.stopMotors();
+
+        stepTimer.reset();
+        while (opModeIsActive() && stepTimer.seconds() < seconds) {
+            updatePose();
+            fwOperate.update();
+            telemetry.update();
+        }
+
     }
 
 }

@@ -12,8 +12,12 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.flywheel.FlywheelOperate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  *
@@ -73,6 +77,19 @@ public class SC2627Base extends LinearOpMode {
     boolean lastAButtonState = false;
     boolean lastBButtonState = false;
     boolean lastShareButtonState = false;
+
+    // Manual drive ramp: a stick command builds from 0 to full over DRIVE_RAMP_SECONDS, even if the
+    // stick is pushed all the way at once. Easing off, letting go and reversing take effect at once
+    // (a reverse drops to 0 first, then builds up again in the new direction).
+    public static double DRIVE_RAMP_SECONDS = 0.5;
+
+    // Manual drive top speeds. Forward/back and turning use speeds.DEFAULT_SPEED;
+    // strafing (left stick sideways) has its own top speed. Raise or lower STRAFE_SPEED (max 1.0).
+
+    private double rampedAxial = 0.0;
+    private double rampedLateral = 0.0;
+    private double rampedYaw = 0.0;
+    private final ElapsedTime m_rampTimer = new ElapsedTime();
 
     GoToPositionController.START_POS startPos = null;
 
@@ -149,6 +166,37 @@ public class SC2627Base extends LinearOpMode {
 
     }
 
+    // Autonomous segment timing: each endSegment() records how long that numbered segment took
+    private final ElapsedTime m_segmentTimer = new ElapsedTime();
+    private final List<String> m_segmentTimes = new ArrayList<>();
+    private double m_segmentTotalSeconds = 0.0;
+
+    /** Call right after waitForStart() in an autonomous, before the first segment. */
+    protected void startSegmentTiming() {
+        m_segmentTimes.clear();
+        m_segmentTotalSeconds = 0.0;
+        m_segmentTimer.reset();
+    }
+
+    /** Call at the end of each segment: records its time (also written to the log, tag SC2627). */
+    protected void endSegment(String name) {
+        double seconds = m_segmentTimer.seconds();
+        m_segmentTimer.reset();
+        m_segmentTotalSeconds += seconds;
+        String line = String.format("%s: %.2f s", name, seconds);
+        m_segmentTimes.add(line);
+        RobotLog.ii("SC2627", "segment " + line);
+    }
+
+    /** Adds every recorded segment time, and the total, to the telemetry. */
+    protected void addSegmentTelemetry() {
+        telemetry.addLine("Segment times");
+        for (String line : m_segmentTimes) {
+            telemetry.addLine(line);
+        }
+        telemetry.addLine(String.format("Total: %.2f s", m_segmentTotalSeconds));
+    }
+
     protected void activateIntakeMode() {
         intake.setPower(speeds.FULL_SPEED);
         leftFeeder.setPower(speeds.FULL_SPEED);
@@ -167,6 +215,31 @@ public class SC2627Base extends LinearOpMode {
 
     protected void deactivateOuttakeMode () {
         fwOperate.toggleSpin();
+    }
+
+    /**
+     * Switches straight to a mode, setting the intake and flywheel to match it:
+     * INTAKE = intake on, flywheel off; POSITIONING = both off; OUTTAKE = intake off, flywheel spinning.
+     * Leaving OUTTAKE also cancels any launch in progress.
+     */
+    protected void setXTakeMode(xTakeMode mode) {
+        switch (mode) {
+            case INTAKE:
+                fwOperate.stop();
+                fwOperate.stopWindmill();
+                activateIntakeMode();
+                break;
+            case POSITIONING:
+                fwOperate.stop();
+                fwOperate.stopWindmill();
+                deactivateIntakeMode();
+                break;
+            case OUTTAKE:
+                deactivateIntakeMode();
+                fwOperate.setSpinning(true);
+                break;
+        }
+        m_xTakeMode = mode;
     }
 
     @Override
@@ -215,11 +288,41 @@ public class SC2627Base extends LinearOpMode {
 
             }
 
+            // D-pad: jump straight to a mode (up = launch, left = intake, right = neither)
+            boolean dpadUpPressed = gamepad1.dpadUpWasPressed();
+            boolean dpadLeftPressed = gamepad1.dpadLeftWasPressed();
+            boolean dpadRightPressed = gamepad1.dpadRightWasPressed();
+            if (dpadUpPressed) {
+                setXTakeMode(xTakeMode.POSITIONING);
+            } else if (dpadLeftPressed) {
+                setXTakeMode(xTakeMode.INTAKE);
+            } else if (dpadRightPressed) {
+                setXTakeMode(xTakeMode.OUTTAKE);
+            }
+
             double max;
 
             double axial   = (Math.abs(gamepad1.left_stick_y)  > 0.08) ? -gamepad1.left_stick_y : 0.0;
             double lateral = (Math.abs(gamepad1.left_stick_x)  > 0.08) ?  gamepad1.left_stick_x : 0.0;
             double yaw     = (Math.abs(gamepad1.right_stick_x) > 0.08) ?  gamepad1.right_stick_x : 0.0;
+
+            // Ramp the stick commands so power builds up gradually instead of all at once
+            double rampDt = Math.min(m_rampTimer.seconds(), 0.1);
+            m_rampTimer.reset();
+            double rampStep = rampDt / DRIVE_RAMP_SECONDS;
+            if (m_driveMode == DriveMode.MANUAL) {
+                rampedAxial = ramp(rampedAxial, axial, rampStep);
+                rampedLateral = ramp(rampedLateral, lateral, rampStep);
+                rampedYaw = ramp(rampedYaw, yaw, rampStep);
+            } else {
+                // Auto-assist is driving: start from 0 again when manual driving resumes
+                rampedAxial = 0.0;
+                rampedLateral = 0.0;
+                rampedYaw = 0.0;
+            }
+            axial = rampedAxial * speeds.DEFAULT_SPEED;
+            lateral = rampedLateral * speeds.STRAFE_SPEED;
+            yaw = rampedYaw * speeds.DEFAULT_SPEED;
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
@@ -228,17 +331,19 @@ public class SC2627Base extends LinearOpMode {
             double backLeftPower = axial - lateral + yaw;
             double backRightPower = axial + lateral - yaw;
 
-            // Normalize the values so no wheel power exceeds 100%
-            // This ensures that the robot maintains the desired motion.
+            // Normalize so no wheel exceeds the top speed (the higher of DEFAULT_SPEED and STRAFE_SPEED),
+            // keeping the ratio between wheels so the robot still moves in the requested direction.
             max = Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower));
             max = Math.max(max, Math.abs(backLeftPower));
             max = Math.max(max, Math.abs(backRightPower));
 
-            if (max > 1.0) {
-                frontLeftPower /= max;
-                frontRightPower /= max;
-                backLeftPower /= max;
-                backRightPower /= max;
+            double wheelCap = Math.max(speeds.DEFAULT_SPEED, speeds.STRAFE_SPEED);
+            if (max > wheelCap) {
+                double scale = wheelCap / max;
+                frontLeftPower *= scale;
+                frontRightPower *= scale;
+                backLeftPower *= scale;
+                backRightPower *= scale;
             }
 
             modulateIntake();
@@ -300,10 +405,10 @@ public class SC2627Base extends LinearOpMode {
 
                     if (m_driveMode == DriveMode.MANUAL) {
 
-                            frontLeftDrive.setPower(frontLeftPower * speeds.DEFAULT_SPEED);
-                            frontRightDrive.setPower(frontRightPower * speeds.DEFAULT_SPEED);
-                            backLeftDrive.setPower(backLeftPower * speeds.DEFAULT_SPEED);
-                            backRightDrive.setPower(backRightPower * speeds.DEFAULT_SPEED);
+                            frontLeftDrive.setPower(frontLeftPower);
+                            frontRightDrive.setPower(frontRightPower);
+                            backLeftDrive.setPower(backLeftPower);
+                            backRightDrive.setPower(backRightPower);
                     }
                     break;
             }
@@ -328,6 +433,20 @@ public class SC2627Base extends LinearOpMode {
             lastCycleEndTime = m_runtime.milliseconds();
 
         }
+    }
+
+    /** Moves current toward target: increases are limited to maxStep, decreases and stops are immediate. */
+    private double ramp(double current, double target, double maxStep) {
+        if (target == 0.0) {
+            return 0.0;
+        }
+        if (current != 0.0 && Math.signum(target) != Math.signum(current)) {
+            return 0.0;   // reversing: drop to 0 first
+        }
+        if (Math.abs(target) <= Math.abs(current)) {
+            return target;   // easing off: follow the stick at once
+        }
+        return current + Math.copySign(Math.min(Math.abs(target - current), maxStep), target);
     }
 
     protected void modulateIntake() {

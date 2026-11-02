@@ -22,23 +22,24 @@ public class GoToPositionController {
 
     static class POSITION_START_BLUE_SECOND_PREFERENCE {
         public final static double x = 9 + 24;
-        public final static double y = 74 - 9;
-        public final static double heading = (3 * Math.PI)/2;
+        public final static double y = 65;
+        public final static double heading = (Math.PI)/2;
     }
 
-    // Red positions mirror the blue ones across x = 0: x -> -x, y unchanged, heading -> PI - heading.
+    // Red positions are the blue ones on the opposite side of the field: north <-> south,
+    // east <-> west, facing the opposite way (x -> -x, y -> -y, heading -> heading + PI).
     // They are defined from the blue values so the two alliances can't drift apart.
 
     static class POSITION_START_RED_FIRST_PREFERENCE {
         public final static double x = -POSITION_START_BLUE_FIRST_PREFERENCE.x;
-        public final static double y = POSITION_START_BLUE_FIRST_PREFERENCE.y;
-        public final static double heading = Math.PI - POSITION_START_BLUE_FIRST_PREFERENCE.heading;
+        public final static double y = -POSITION_START_BLUE_FIRST_PREFERENCE.y;
+        public final static double heading = normalizeAngle(POSITION_START_BLUE_FIRST_PREFERENCE.heading + Math.PI);
     }
 
     static class POSITION_START_RED_SECOND_PREFERENCE {
-        public final static double x = -POSITION_START_BLUE_SECOND_PREFERENCE.x;
-        public final static double y = POSITION_START_BLUE_SECOND_PREFERENCE.y;
-        public final static double heading = Math.PI - POSITION_START_BLUE_SECOND_PREFERENCE.heading;
+        public final static double x = -74 + 24 + 9; //-41
+        public final static double y = -74 + 9; //-65
+        public final static double heading = (3 * Math.PI) /2;
     }
 
     static class POSITION_END_BLUE {
@@ -49,8 +50,8 @@ public class GoToPositionController {
 
     static class POSITION_END_RED {
         public final static double x = -POSITION_END_BLUE.x;
-        public final static double y = POSITION_END_BLUE.y;
-        public final static double heading = Math.PI - POSITION_END_BLUE.heading;
+        public final static double y = -POSITION_END_BLUE.y;
+        public final static double heading = normalizeAngle(POSITION_END_BLUE.heading + Math.PI);
     }
 
     static class POSITION_SCORING_TOP_BLUE {
@@ -67,14 +68,14 @@ public class GoToPositionController {
 
     static class POSITION_SCORING_TOP_RED {
         public final static double x = -POSITION_SCORING_TOP_BLUE.x;
-        public final static double y = POSITION_SCORING_TOP_BLUE.y;
-        public final static double heading = Math.PI - POSITION_SCORING_TOP_BLUE.heading;
+        public final static double y = -POSITION_SCORING_TOP_BLUE.y;
+        public final static double heading = normalizeAngle(POSITION_SCORING_TOP_BLUE.heading + Math.PI);
     }
 
     static class POSITION_SCORING_BOTTOM_RED {
         public final static double x = -POSITION_SCORING_BOTTOM_BLUE.x;
-        public final static double y = POSITION_SCORING_BOTTOM_BLUE.y;
-        public final static double heading = Math.PI - POSITION_SCORING_BOTTOM_BLUE.heading;
+        public final static double y = -POSITION_SCORING_BOTTOM_BLUE.y;
+        public final static double heading = normalizeAngle(POSITION_SCORING_BOTTOM_BLUE.heading + Math.PI);
     }
 
     public enum START_POS {
@@ -654,6 +655,14 @@ public class GoToPositionController {
     public void setTargetPositionAndPath(double x, double y, double heading, double maxPower) {
         setTargetPositionAndPath(x, y, heading);
         moveMaxPower = Math.min(maxPower, MAX_DRIVE_POWER);
+    }
+
+    /** Like setTargetPositionAndPath(x, y, heading), but routes around the hazard rectangles. */
+    public void setTargetAndPlanPath(double x, double y, double heading) {
+        targetX = x;
+        targetY = y;
+        targetHeading = heading;
+        navigateObstacles();
     }
 
     private void navigateObstacles() {

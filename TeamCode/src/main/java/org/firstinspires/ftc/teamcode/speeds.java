@@ -6,6 +6,7 @@ public class speeds {
     public final static double SLOW_SPEED = 0.2;
     public final static double HALF_SPEED = 0.5;
     public final static double DEFAULT_SPEED = 0.8;
+    public final static double STRAFE_SPEED = 1.0;
     public final static double FULL_SPEED = 1.0;
 
     public final static double WINDMILL_TIME_SECONDS = 2.00; //The feeder servos run this long when a shot is requested.

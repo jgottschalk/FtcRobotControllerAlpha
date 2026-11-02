@@ -38,6 +38,7 @@ public class FlywheelOperate {
     private final double[] shotExitRpm = new double[]{-1, -1, -1, -1};
     private int shotCount = 0;
 
+    protected boolean windMillCancelled = false;
 
     private final ElapsedTime stateTimer = new ElapsedTime();
     private final ElapsedTime windmillTimer = new ElapsedTime();
@@ -75,12 +76,11 @@ public class FlywheelOperate {
     }
 
     public void stopWindmill() {
+        windMillCancelled = true;
         windMill.setPower(speeds.STOP_SPEED);
     }
 
-    public void startWindmill() {
-        windMill.setPower(1.0); //TODO
-    }
+    public void startWindmill() { windMill.setPower(1.0); }
 
     public boolean isWindmillSpinning() {
         return windMill.getPower() > 0.0;
@@ -198,7 +198,7 @@ public class FlywheelOperate {
                 boolean stopWindmill = (windmillTimer.seconds() > buffer + speeds.WINDMILL_TIME_SECONDS) &&
                         //(color.blue() > 43) &&
                         //(color.blue() < 51) &&
-                        (color.alpha() <= 33) &&
+                        (color.alpha() <= 33) && //PMS: 45 - 50; scrimmage: 33
                         (color.getDistance(DistanceUnit.CM) >= 5.5);
                         //(color.getDistance(DistanceUnit.CM) < 7.0);
 
@@ -209,8 +209,9 @@ public class FlywheelOperate {
                                 ", alpha: " + color.alpha() +
                                 ", distance: " + color.getDistance(DistanceUnit.CM);
 
-                if (stopWindmill) {
+                if (stopWindmill || windMillCancelled ) {
                     stopWindmill();
+                    windMillCancelled = false;
                     enter(FlywheelState.IDLE);
                 }
 
@@ -225,13 +226,5 @@ public class FlywheelOperate {
     //public void adjustFeedMs(double delta) { feedMs = Math.max(50, feedMs + delta); }
     //public void fireUngated() { startFire(false); } Run the feeder immediately without waiting for ready (for testing).
     //public void cancel() { cancel("Cancelled"); } //Stop the feeder and return to idle. Flywheel keeps spinning.
-
-        /*
-    private void cancel(String why) {
-        stopWindmill();
-        message = why;
-        enter(FlywheelState.IDLE);
-    }
-    */
 
 }
